@@ -1441,7 +1441,7 @@ export class Game {
   update(dt, t) {
     this.time = t;
     this.uiTick = (this.uiTick + 1) % 10;
-    const sim = this.paused ? 0 : dt * (this.timeScale ?? 1);
+    const sim = this.paused || this.modals ? 0 : dt * (this.timeScale ?? 1);
 
     if (sim === 0) {
       // duraklatılmışken bile nefes alıp dururlar

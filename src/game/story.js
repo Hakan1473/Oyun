@@ -268,7 +268,7 @@ export class Story {
 
   update(dt) {
     const g = this.game;
-    if (!g.paused) {
+    if (!g.paused && !g.modals) {
       // gecikmeler oyun saatine göre işler (hızlandırılmış zamanda da sahneler doğru sırada gelir)
       const sdt = dt * (g.timeScale ?? 1);
       for (const t of [...this.timed]) {
@@ -284,7 +284,7 @@ export class Story {
         this.hook({ type: 'tick' });
       }
     }
-    if (!this.active && this.queue.length && !g.place) this.#play(this.queue.shift());
+    if (!this.active && this.queue.length && !g.place && !g.modals) this.#play(this.queue.shift());
   }
 
   async #play({ scene, ev }) {

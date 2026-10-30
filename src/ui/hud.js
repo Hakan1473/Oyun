@@ -292,12 +292,15 @@ export class Hud {
     const el = h('div', { class: 'modal' }, card);
     document.body.appendChild(el);
     requestAnimationFrame(() => el.classList.add('in'));
+    // pencere açıkken oyun ve hikâye bekler (sabah raporunun üstüne sahne açılmasın)
+    this.game.modals = (this.game.modals ?? 0) + 1;
     btn.addEventListener('click', () => {
       audio.play('close');
       el.classList.remove('in');
       setTimeout(() => el.remove(), 500);
+      this.game.modals = Math.max(0, this.game.modals - 1);
       onClose?.();
-    });
+    }, { once: true });
     return el;
   }
 
