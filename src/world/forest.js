@@ -26,7 +26,9 @@ export class Forest {
     const N = cfg.grid.size;
     const H = ground.half - 1;
     const rng = mulberry32(4242);
-    const step = quality === 'low' ? 2.5 : 2.15;
+    void quality;
+    const P = stage.profile;
+    const step = P.forestStep;
     const groups = new Map();
     for (let x = -H; x <= H; x += step) {
       for (let z = -H; z <= H; z += step) {
@@ -40,10 +42,11 @@ export class Forest {
         const type = r < 0.62 ? 'spruce' : r < 0.82 ? 'deadtree' : 'birch';
         const variant = Math.floor(rng() * TREE_TYPES[type].variants);
         const dist = Math.hypot(px, pz);
-        const lod = dist > 30 ? 1 : 0;
+        const lod = dist > P.lodDist ? 1 : 0;
         const ck = `${Math.floor((px + H) / CHUNK)},${Math.floor((pz + H) / CHUNK)}`;
         const key = `${ck}|${type}|${variant}|${lod}`;
-        if (!groups.has(key)) groups.set(key, { type, variant, lod, items: [], near: dist < 34 });
+        // gölgeyi yalnızca açıklığa yakın ağaçlar düşürür; uzaktakiler sisin içinde kalır
+        if (!groups.has(key)) groups.set(key, { type, variant, lod, items: [], near: dist < P.shadowNear });
         groups.get(key).items.push({ x: px, z: pz, rot: rng() * Math.PI * 2, s: 0.85 + rng() * 0.4 + Math.min(0.35, dist / 120), tint: rng() });
       }
     }

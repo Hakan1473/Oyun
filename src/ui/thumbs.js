@@ -8,22 +8,14 @@ import { HumanRig } from '../world/rigs.js';
 
 const DEG = Math.PI / 180;
 
+// Önizlemeler ayrı, küçük bir WebGL bağlamında çizilir. Telefonlarda ikinci bağlam bellek
+// tükettiği için resimler üretildikten kısa süre sonra kapatılır; gerekirse yeniden açılır.
 export class Thumbs {
   constructor(cfg) {
     this.cache = new Map();
     this.cfg = cfg;
-    try {
-      this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
-    } catch {
-      this.renderer = null;
-      return;
-    }
-    const r = this.renderer;
-    r.setPixelRatio(1);
-    r.outputColorSpace = THREE.SRGBColorSpace;
-    r.toneMapping = THREE.ACESFilmicToneMapping;
-    r.toneMappingExposure = 1.15;
-    r.setClearColor(0x000000, 0);
+    this.renderer = null;
+    this.failed = false;
     this.scene = new THREE.Scene();
     this.scene.add(new THREE.HemisphereLight(0x9aa8b4, 0x1a1c18, 1.6));
     this.key = new THREE.DirectionalLight(0xffd2a0, 2.6);
@@ -39,6 +31,33 @@ export class Thumbs {
     this.dir = new THREE.Vector3(Math.cos(el) * Math.sin(az), Math.sin(el), Math.cos(el) * Math.cos(az));
   }
 
+  #ensure() {
+    clearTimeout(this.idle);
+    this.idle = setTimeout(() => this.release(), 1500);
+    if (this.renderer || this.failed) return this.renderer;
+    try {
+      this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true, powerPreference: 'low-power' });
+    } catch {
+      this.failed = true;
+      return null;
+    }
+    const r = this.renderer;
+    r.setPixelRatio(1);
+    r.outputColorSpace = THREE.SRGBColorSpace;
+    r.toneMapping = THREE.ACESFilmicToneMapping;
+    r.toneMappingExposure = 1.15;
+    r.setClearColor(0x000000, 0);
+    return r;
+  }
+
+  release() {
+    clearTimeout(this.idle);
+    if (!this.renderer) return;
+    this.renderer.dispose();
+    this.renderer.forceContextLoss();
+    this.renderer = null;
+  }
+
   get(id, level = 1, variant = 0) {
     const key = `${id}:${level}:${variant}`;
     if (!this.cache.has(key)) this.cache.set(key, this.#building(getDef(id), level, variant));
@@ -46,7 +65,7 @@ export class Thumbs {
   }
 
   #building(def, level, variant) {
-    if (!this.renderer || !def) return '';
+    if (!def || !this.#ensure()) return '';
     this.renderer.setSize(220, 220, false);
     const model = buildModel(def, { level, variant });
     this.scene.add(model.root);
@@ -79,7 +98,7 @@ export class Thumbs {
   portrait(def) {
     const key = `p:${def.id}`;
     if (this.cache.has(key)) return this.cache.get(key);
-    if (!this.renderer || !def.look) return '';
+    if (!def.look || !this.#ensure()) return '';
     this.renderer.setSize(256, 256, false);
     const rig = new HumanRig(def.look);
     rig.pose(0.016, { t: 0 });

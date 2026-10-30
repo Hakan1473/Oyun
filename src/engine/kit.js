@@ -179,7 +179,8 @@ export class Kit {
 
   dome(r, color, o = {}) {
     const ws = o.ws ?? 20;
-    const geo = cached(`d:${r}:${ws}`, () => new THREE.SphereGeometry(r, ws, 10, 0, Math.PI * 2, 0, Math.PI / 2));
+    const hs = o.hs ?? 10;
+    const geo = cached(`d:${r}:${ws}:${hs}`, () => new THREE.SphereGeometry(r, ws, hs, 0, Math.PI * 2, 0, Math.PI / 2));
     return this.add(geo, color, o);
   }
 

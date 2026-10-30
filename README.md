@@ -49,7 +49,7 @@ npm install
 npm run build
 ```
 
-Düşük donanımda kalite elle seçilebilir: `?q=low`, `?q=medium`, `?q=high`.
+Görüntü kalitesi oyundaki Ayarlar sayfasından seçilir (Akıcı / Dengeli / En iyi) ya da adrese eklenir: `?q=low`, `?q=medium`, `?q=high`. Telefon ve tabletler kendiliğinden "Dengeli" ile başlar.
 
 ## Görüntü teknolojisi
 
@@ -57,7 +57,8 @@ Düşük donanımda kalite elle seçilebilir: `?q=low`, `?q=medium`, `?q=high`.
 - **Yumuşak geometri:** Sarkık dal katmanlı ladinler, eğri tüplerden dallanan ölü ağaçlar, gürültüyle şekillenen kayalar.
 - **Render hattı:** HDR sahne ve derinlik üzerinden yere çöken, hareket eden sis. Ateşlerin sise saçılan ışığı, bloom, kenarlarda bulanıklık ve renk sapması, ACES ton eşleme, gün saatine göre renk derecelendirmesi, film greni, sinematik bantlar.
 - **Işık:** Ateşler ve meşaleler titreyen nokta ışıklardır. Gece fener hüzmeleri ve gerçek spot ışıklar devreye girer. Gölgeler önbellekte tutulur.
-- **Uyarlanabilir kalite:** Kare hızı düşerse çözünürlük kendiliğinden ayarlanır.
+- **Uyarlanabilir kalite:** Kare hızı düşerse çözünürlük kendiliğinden düşer, cihaz hızlıysa yükselir; büyük tablet ekranlarında toplam piksel sayısı sınırlanır.
+- **Telefon kademesi:** PBR yerine Lambert ışık modeli, daha az nokta ışık, MSAA yerine FXAA, sadeleştirilmiş sis ve bloom, seyrek bitki örtüsü, arayüzde canlı bulanıklık yok. Tüm gölgelendiriciler açılışta önceden derlenir; ilk gece ya da ilk inşaatta takılma olmaz.
 
 ## Mimari
 

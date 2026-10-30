@@ -1,5 +1,6 @@
 // Kuytu — giriş noktası. Dokuları boyar, dünyayı kurar, kaydı yükler, arayüzü bağlar ve döngüyü başlatır.
 
+import * as THREE from 'three';
 import { CONFIG } from './config.js';
 import { loadSave } from './core/storage.js';
 import { bus } from './core/events.js';
@@ -9,7 +10,10 @@ import { Input } from './engine/input.js';
 import { FX } from './engine/fx.js';
 import { Overlay } from './engine/overlay.js';
 import { createTextures } from './engine/textures.js';
-import { initMaterials, setHighlightPulse } from './engine/materials.js';
+import { initMaterials, setHighlightPulse, highlightOf, clippedOf } from './engine/materials.js';
+import { mapMaterials } from './engine/kit.js';
+import { buildModel } from './game/models.js';
+import { ShadeRig } from './world/rigs.js';
 import { Ground, Flora } from './world/ground.js';
 import { Forest, TreeField } from './world/forest.js';
 import { Lights } from './world/lights.js';
@@ -28,6 +32,40 @@ import { audio } from './audio/audio.js';
 
 const nextFrame = () => new Promise((r) => requestAnimationFrame(() => r()));
 
+// Oyunda sonradan beliren her şeyin gölgelendiricisini açılışta derle: ilk gece, ilk inşaat,
+// ilk seçim ya da ilk gölge göründüğünde telefonun yarım saniye donmasını önler.
+async function warmShaders(stage, game) {
+  const warm = new THREE.Group();
+  const plane = new THREE.Plane(new THREE.Vector3(0, -1, 0), 0.1);
+  const models = [];
+  for (const d of allDefs().filter((x) => !x.instanced)) {
+    for (let lv = 1; lv <= d.maxLevel; lv++) {
+      for (const mode of ['plain', 'hi', 'clip']) {
+        const m = buildModel(d, { level: lv, variant: 0 });
+        if (mode === 'hi') mapMaterials(m.mesh, highlightOf);
+        if (mode === 'clip') mapMaterials(m.mesh, (x) => clippedOf(x, plane));
+        warm.add(m.root);
+        models.push(m);
+      }
+    }
+  }
+  warm.add(new ShadeRig(1).root);
+  const beams = game.survivors.list.map((s) => s.beam);
+  for (const b of beams) b.visible = true;
+  stage.scene.add(warm);
+  const r = stage.renderer;
+  r.setRenderTarget(stage.post.rtScene);
+  try {
+    await r.compileAsync(stage.scene, stage.camera);
+  } catch {
+    r.compile(stage.scene, stage.camera);
+  }
+  r.setRenderTarget(null);
+  stage.scene.remove(warm);
+  for (const b of beams) b.visible = false;
+  for (const m of models) m.dispose();
+}
+
 async function boot() {
   const splash = new Splash();
   document.body.insertAdjacentHTML('afterbegin', ICON_DEFS);
@@ -37,14 +75,27 @@ async function boot() {
   const canvas = document.getElementById('scene');
   let stage;
   try {
-    stage = new Stage(canvas, CONFIG);
+    try {
+      stage = new Stage(canvas, CONFIG);
+    } catch {
+      // Sayfa yeni açıldığında önceki sekmenin bağlamı henüz bırakılmamış olabilir: kısa bir bekleyiş
+      await new Promise((r) => setTimeout(r, 900));
+      stage = new Stage(canvas, CONFIG);
+    }
   } catch (err) {
     console.error(err);
-    splash.fail('Bu cihaz 3B grafikleri (WebGL 2) desteklemiyor.');
+    // Ayrıntı küçük yazıyla gösterilir: hangi tarayıcıda neyin kırıldığını anlamak için
+    splash.fail('3B grafikler başlatılamadı. Tarayıcıyı kapatıp yeniden açmayı ya da Safari/Chrome ile denemeyi dene.', String(err?.message ?? err).slice(0, 160));
     return;
   }
+  // Telefonda buzlu cam (backdrop-filter) her karede canlı sahnenin üstünde yeniden bulanıklaştırılır;
+  // pahalıdır. Orta ve düşük kalitede yerine koyu, düz bir zemin kullanılır.
+  if (stage.quality !== 'high') document.documentElement.classList.add('lite-ui');
+  // Bellek baskısında tarayıcı grafik bağlamını geri alırsa oyun donmaz; geri gelince sürer
+  stage.onLost = () => splash.lost?.(true);
+  stage.onRestored = () => splash.lost?.(false);
   const T = await createTextures({ quality: stage.quality, onProgress: (k) => splash.progress(0.05 + k * 0.4) });
-  initMaterials(T, { msaa: stage.msaa });
+  initMaterials(T, { msaa: stage.msaa, cheap: stage.profile.lambert });
 
   const rig = new CameraRig(stage, CONFIG);
   const resize = () => {
@@ -82,8 +133,13 @@ async function boot() {
   await nextFrame();
 
   const thumbs = new Thumbs(CONFIG);
-  for (const d of allDefs().filter((x) => x.shop)) thumbs.get(d.id, 1, 0);
+  for (const d of allDefs().filter((x) => !x.instanced && x.category !== 'nature')) {
+    for (let lv = 1; lv <= d.maxLevel; lv++) thumbs.get(d.id, lv, 0);
+  }
+  const cabin = state.entities.find((e) => e.type === 'cabin');
+  if (cabin) for (let lv = 1; lv <= 3; lv++) thumbs.get('cabin', lv, cabin.variant ?? 0);
   for (const s of game.survivors.list) thumbs.portrait(s.def);
+  thumbs.release();
   splash.progress(0.95);
   await nextFrame();
 
@@ -110,6 +166,8 @@ async function boot() {
   });
   input.enabled = false;
 
+  await warmShaders(stage, game);
+
   // Giriş: ormanın üstünde süzülen kamera
   rig.target.set(-6, 0, -5);
   rig.ppu = rig.ppuGoal = rig.clampPpu(CONFIG.camera.splashPpu);
@@ -135,7 +193,7 @@ async function boot() {
     cycle.apply(dt);
     flora.update(dt);
     lights.update(dt, rig.target, cycle.darkness);
-    fx.update(dt, rig.ppu, stage.dpr, t);
+    fx.update(dt, rig.ppu, stage.renderDpr ?? stage.dpr, t);
     setHighlightPulse(t);
     stage.render(t);
     overlay.update();

@@ -3,7 +3,7 @@
 
 import * as THREE from 'three';
 import { Kit } from '../engine/kit.js';
-import { MAT } from '../engine/materials.js';
+import { MAT, litMaterial } from '../engine/materials.js';
 import { mulberry32 } from '../core/rng.js';
 import { PATHS, CLEARING, pathDistance } from './layout.js';
 
@@ -108,7 +108,7 @@ export class Ground {
     const H = this.half;
     const geo = new THREE.PlaneGeometry(H * 2, H * 2, 1, 1);
     geo.rotateX(-Math.PI / 2);
-    const mat = new THREE.MeshStandardMaterial({ map: this.T.floor, roughness: 0.97, metalness: 0 });
+    const mat = litMaterial({ map: this.T.floor, roughness: 0.97, metalness: 0 });
     const uniforms = {
       tMask: { value: this.maskTex },
       tDirt: { value: this.T.dirt },
@@ -228,9 +228,10 @@ export class Flora {
     this.time = ground.time;
     this.sets = [];
     const rng = mulberry32(77);
-    const dense = quality === 'high' ? 1 : quality === 'medium' ? 0.7 : 0.45;
+    void quality;
+    const dense = stage.profile.flora;
 
-    const grassMat = windMaterial(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95, side: THREE.DoubleSide }), this.time, 0.09);
+    const grassMat = windMaterial(litMaterial({ vertexColors: true, roughness: 0.95, side: THREE.DoubleSide }), this.time, 0.09);
     const clump = grassClump(rng);
     this.grass = this.#scatter(clump, grassMat, Math.round(2600 * dense), (x, z, m) => {
       if (m.path > 0.55) return 0;
@@ -267,8 +268,9 @@ export class Flora {
       const a = rng() * Math.PI * 2;
       const r = rng() * 0.18;
       const h = 0.05 + rng() * 0.08;
-      mushKit.cyl(0.012, 0.016, h, 8, 0xd8d6c8, { x: Math.cos(a) * r, y: h / 2, z: Math.sin(a) * r });
-      mushKit.dome(0.03 + rng() * 0.025, 0x9fe8ff, { mat: 'cold', x: Math.cos(a) * r, y: h, z: Math.sin(a) * r, sy: 0.6 });
+      // birkaç santimlik nesneler: az bölümlü geometri yeter (önceden küme başına 2.000+ üçgendi)
+      mushKit.cyl(0.012, 0.016, h, 5, 0xd8d6c8, { x: Math.cos(a) * r, y: h / 2, z: Math.sin(a) * r });
+      mushKit.dome(0.03 + rng() * 0.025, 0x9fe8ff, { mat: 'cold', x: Math.cos(a) * r, y: h, z: Math.sin(a) * r, sy: 0.6, ws: 8, hs: 4 });
     }
     this.mushrooms = this.#scatterKit(mushKit, Math.round(140 * dense), (x, z, m) => (m.path > 0.3 ? 0 : 0.2 + (1 - m.open) * 0.6), { scale: [0.8, 1.6], shadow: false, avoidGrid: false });
   }

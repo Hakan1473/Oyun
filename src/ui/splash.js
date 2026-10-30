@@ -45,8 +45,29 @@ export class Splash {
     });
   }
 
-  fail(message) {
+  fail(message, detail = '') {
     this.el.classList.add('error');
     this.note.textContent = message;
+    if (detail) {
+      const d = document.createElement('small');
+      d.className = 'splash-detail';
+      d.textContent = detail;
+      this.note.after(d);
+    }
+  }
+
+  // Grafik bağlamı kaybolduğunda (bellek baskısı) üstte beliren uyarı
+  lost(on) {
+    let el = document.getElementById('gl-lost');
+    if (on && !el) {
+      el = document.createElement('div');
+      el.id = 'gl-lost';
+      el.className = 'gl-lost';
+      el.innerHTML = '<p>Grafik belleği doldu, oyun bekliyor…</p><button type="button">Yeniden yükle</button>';
+      el.querySelector('button').addEventListener('click', () => location.reload());
+      document.body.appendChild(el);
+    } else if (!on && el) {
+      el.remove();
+    }
   }
 }

@@ -5,6 +5,10 @@ import * as THREE from 'three';
 import { ShadeRig } from './rigs.js';
 import { getDef, levelStats } from '../buildings/index.js';
 
+// her karede yeni vektör üretmemek için (telefonda çöp toplama takılması)
+const T1 = new THREE.Vector2();
+const T2 = new THREE.Vector2();
+
 const SPEED = 1.15;
 
 export class Shade {
@@ -101,7 +105,7 @@ export class Shade {
 
     if (this.mode === 'retreat' || dark < 0.25) {
       this.mode = 'retreat';
-      const out = new THREE.Vector2(this.pos.x, this.pos.y).normalize();
+      const out = T1.copy(this.pos).normalize();
       this.move(out.x, out.y, dt, 1.6);
       this.fade += dt * 0.5;
       if (this.fade > 1.2) this.sys.remove(this);
@@ -119,7 +123,7 @@ export class Shade {
       this.timer = 4 + Math.random() * 3;
     }
     if (this.mode === 'flee') {
-      const away = new THREE.Vector2(this.pos.x, this.pos.y).normalize();
+      const away = T1.copy(this.pos).normalize();
       this.move(away.x, away.y, dt, 1.5);
       if (this.timer <= 0) {
         this.mode = 'stalk';
@@ -142,14 +146,14 @@ export class Shade {
     const dx = tp.x - this.pos.x;
     const dz = tp.y - this.pos.y;
     const dist = Math.hypot(dx, dz);
-    let dir = new THREE.Vector2(dx / dist, dz / dist);
+    let dir = T1.set(dx / dist, dz / dist);
 
     // Önündeki ışık güçlü ise kıyıda dolaş (hedef ışığın kendisi değilse)
     const probe = g.lights.coverage(this.pos.x + dir.x * 1.4, this.pos.y + dir.y * 1.4, 1);
     const targetIsLight = this.target.kind === 'view' && !!levelStats(this.target.ref.def, this.target.ref.e.level)?.light;
     const bold = this.mode === 'rush';
     if (probe > 0.5 && !targetIsLight && !bold) {
-      const tang = new THREE.Vector2(-dir.y * this.orbit, dir.x * this.orbit);
+      const tang = T2.set(-dir.y * this.orbit, dir.x * this.orbit);
       dir = tang.multiplyScalar(0.9).addScaledVector(dir, -0.25).normalize();
       if (Math.random() < dt * 0.08) this.mode = 'rush';
     } else if (bold && Math.random() < dt * 0.4) {

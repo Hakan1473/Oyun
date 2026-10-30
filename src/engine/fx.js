@@ -65,9 +65,17 @@ const frag = /* glsl */ `
   }
 `;
 
+// renkler parçacık başına değil, bir kez çevrilir
+const linCache = new Map();
 const lin = (hex, k = 1) => {
-  const c = new THREE.Color(hex);
-  return [c.r * k, c.g * k, c.b * k];
+  const key = hex * 64 + k;
+  let v = linCache.get(key);
+  if (!v) {
+    const c = new THREE.Color(hex);
+    v = [c.r * k, c.g * k, c.b * k];
+    linCache.set(key, v);
+  }
+  return v;
 };
 
 class Layer {

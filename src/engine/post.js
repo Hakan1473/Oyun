@@ -2,6 +2,7 @@
 //   sahne (HDR + derinlik) → atmosfer (yere çöken, hareketli sis + ışık saçılması)
 //   → bloom (parlayan ateşler, gözler) + yumuşak kopya (kenar bulanıklığı)
 //   → son geçiş (ton eşleme, renk derecelendirme, vinyet, gren, sinematik bant)
+//   → telefonlarda FXAA (MSAA yerine ucuz kenar yumuşatma)
 
 import * as THREE from 'three';
 
@@ -19,10 +20,12 @@ const NOISE = /* glsl */ `
     return mix(mix(mix(h31(i), h31(i + vec3(1,0,0)), f.x), mix(h31(i + vec3(0,1,0)), h31(i + vec3(1,1,0)), f.x), f.y),
                mix(mix(h31(i + vec3(0,0,1)), h31(i + vec3(1,0,1)), f.x), mix(h31(i + vec3(0,1,1)), h31(i + vec3(1,1,1)), f.x), f.y), f.z);
   }
-  float fbm(vec3 p) { float s = 0.0, a = 0.5; for (int i = 0; i < 4; i++) { s += a * vn(p); p *= 2.03; a *= 0.5; } return s / 0.9375; }
+  float fbm(vec3 p) { float s = 0.0, a = 0.5; for (int i = 0; i < FOG_OCTAVES; i++) { s += a * vn(p); p *= 2.03; a *= 0.5; } return s / FOG_NORM; }
 `;
 
-const atmosFrag = /* glsl */ `
+const atmosFrag = (octaves) => /* glsl */ `
+  #define FOG_OCTAVES ${octaves}
+  #define FOG_NORM ${(1 - 0.5 ** octaves).toFixed(4)}
   uniform sampler2D tColor;
   uniform sampler2D tDepth;
   uniform mat4 uProjInv;
@@ -123,6 +126,43 @@ const upFrag = /* glsl */ `
   }
 `;
 
+// Telefonlarda MSAA yerine: kenar yönünde örnekleyen hızlı yumuşatma (FXAA). Gren de burada
+// eklenir ki yumuşatma onu kenar sanıp bulandırmasın.
+const fxaaFrag = /* glsl */ `
+  uniform sampler2D tColor;
+  uniform vec2 uTexel;
+  uniform vec2 uRes;
+  uniform float uTime;
+  uniform float uGrain;
+  varying vec2 vUv;
+  float hash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
+  void main() {
+    vec3 nw = texture2D(tColor, vUv + vec2(-1.0, -1.0) * uTexel).rgb;
+    vec3 ne = texture2D(tColor, vUv + vec2(1.0, -1.0) * uTexel).rgb;
+    vec3 sw = texture2D(tColor, vUv + vec2(-1.0, 1.0) * uTexel).rgb;
+    vec3 se = texture2D(tColor, vUv + vec2(1.0, 1.0) * uTexel).rgb;
+    vec3 m = texture2D(tColor, vUv).rgb;
+    const vec3 L = vec3(0.299, 0.587, 0.114);
+    float lNW = dot(nw, L), lNE = dot(ne, L), lSW = dot(sw, L), lSE = dot(se, L), lM = dot(m, L);
+    float lMin = min(lM, min(min(lNW, lNE), min(lSW, lSE)));
+    float lMax = max(lM, max(max(lNW, lNE), max(lSW, lSE)));
+    vec3 col = m;
+    if (lMax - lMin > max(0.03, lMax * 0.1)) {
+      vec2 dir = vec2(-((lNW + lNE) - (lSW + lSE)), (lNW + lSW) - (lNE + lSE));
+      float red = max((lNW + lNE + lSW + lSE) * 0.03125, 1.0 / 128.0);
+      float rcp = 1.0 / (min(abs(dir.x), abs(dir.y)) + red);
+      dir = clamp(dir * rcp, vec2(-8.0), vec2(8.0)) * uTexel;
+      vec3 a = 0.5 * (texture2D(tColor, vUv + dir * (1.0 / 3.0 - 0.5)).rgb + texture2D(tColor, vUv + dir * (2.0 / 3.0 - 0.5)).rgb);
+      vec3 b = a * 0.5 + 0.25 * (texture2D(tColor, vUv - dir * 0.5).rgb + texture2D(tColor, vUv + dir * 0.5).rgb);
+      float lB = dot(b, L);
+      col = (lB < lMin || lB > lMax) ? a : b;
+    }
+    float g = hash(vUv * uRes + fract(uTime * 7.13) * 91.7) - 0.5;
+    col += g * uGrain * (0.35 + 0.65 * smoothstep(0.0, 0.5, lM));
+    gl_FragColor = vec4(col, 1.0);
+  }
+`;
+
 const finalFrag = /* glsl */ `
   uniform sampler2D tColor;
   uniform sampler2D tBloom;
@@ -188,13 +228,18 @@ function rt(w, h, type, opts = {}) {
 }
 
 export class Post {
-  constructor(renderer, { msaa = true } = {}) {
+  constructor(renderer, { msaa = true, fxaa = false, fogOctaves = 4, bloomLevels = 4, softChain = true } = {}) {
     this.renderer = renderer;
     const gl = renderer.getContext();
     const isGL2 = renderer.capabilities.isWebGL2;
     const half = isGL2 && (renderer.extensions.has('EXT_color_buffer_float') || renderer.extensions.has('EXT_color_buffer_half_float'));
     this.type = half ? THREE.HalfFloatType : THREE.UnsignedByteType;
     this.samples = msaa && isGL2 ? Math.min(4, gl.getParameter(gl.MAX_SAMPLES) || 0) : 0;
+    this.fxaa = fxaa;
+    this.bloomLevels = bloomLevels;
+    this.softChain = softChain;
+    // en düşük çözünürlükte hâlâ yavaşsa Stage açar: yumuşak kopya ve en derin bloom katı atlanır
+    this.lite = false;
     this.enabled = true;
 
     this.scene = new THREE.Scene();
@@ -206,7 +251,7 @@ export class Post {
     this.cam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
 
     const mk = (frag, uniforms) => new THREE.ShaderMaterial({ vertexShader: vert, fragmentShader: frag, uniforms, depthTest: false, depthWrite: false });
-    this.atmos = mk(atmosFrag, {
+    this.atmos = mk(atmosFrag(fogOctaves), {
       tColor: { value: null }, tDepth: { value: null },
       uProjInv: { value: new THREE.Matrix4() }, uCamWorld: { value: new THREE.Matrix4() },
       uFogColor: { value: new THREE.Color(0x6f7a77) }, uFogLight: { value: new THREE.Color(0x000000) },
@@ -227,14 +272,15 @@ export class Post {
       uVignette: { value: 0.45 }, uGrain: { value: 0.028 }, uBlur: { value: 1 }, uAberr: { value: 0.0025 },
       uLetter: { value: 0 }, uFade: { value: 0 }, uDamage: { value: 0 }, uFear: { value: 0 },
     });
+    this.aa = mk(fxaaFrag, { tColor: { value: null }, uTexel: { value: new THREE.Vector2() }, uRes: { value: new THREE.Vector2(1, 1) }, uTime: { value: 0 }, uGrain: { value: 0.028 } });
     this.params = this.final.uniforms;
     this.fog = this.atmos.uniforms;
   }
 
-  setSize(w, h, dpr) {
+  setSize(w, h, dpr, force = false) {
     const W = Math.max(1, Math.round(w * dpr));
     const H = Math.max(1, Math.round(h * dpr));
-    if (this.W === W && this.H === H) return;
+    if (!force && this.W === W && this.H === H) return;
     this.W = W;
     this.H = H;
     this.dispose();
@@ -245,17 +291,37 @@ export class Post {
       minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter,
     });
     this.rtScene.texture.generateMipmaps = false;
+    // Bazı mobil sürücüler kayan noktalı ya da çok örnekli hedefi kabul etmez: sessizce sadeleştir
+    if (!this.#complete(this.rtScene)) {
+      if (this.samples > 0) this.samples = 0;
+      else if (this.type !== THREE.UnsignedByteType) this.type = THREE.UnsignedByteType;
+      else throw new Error('Görüntü hedefi oluşturulamadı');
+      return this.setSize(w, h, dpr, true);
+    }
     this.rtAtmos = rt(W, H, this.type);
     const s = (k) => [Math.ceil(W / k), Math.ceil(H / k)];
-    this.bloomDown = [4, 8, 16, 32].map((k) => rt(...s(k), this.type));
-    this.bloomUp = [16, 8, 4].map((k) => rt(...s(k), this.type));
-    this.softDown = [2, 4, 8, 16].map((k) => rt(...s(k), this.type));
-    this.softUp = [8, 4, 2].map((k) => rt(...s(k), this.type));
+    const levels = [4, 8, 16, 32].slice(0, this.bloomLevels);
+    this.bloomDown = levels.map((k) => rt(...s(k), this.type));
+    this.bloomUp = levels.slice(0, -1).reverse().map((k) => rt(...s(k), this.type));
+    // Kenar bulanıklığı için yumuşak kopya: masaüstünde tam zincir, telefonda dörtte bir çözünürlük yeter
+    this.softDown = (this.softChain ? [2, 4, 8, 16] : [2, 4]).map((k) => rt(...s(k), this.type));
+    this.softUp = this.softChain ? [8, 4, 2].map((k) => rt(...s(k), this.type)) : [];
+    this.rtLdr = this.fxaa ? rt(W, H, THREE.UnsignedByteType) : null;
     this.params.uRes.value.set(W, H);
+    this.aa.uniforms.uRes.value.set(W, H);
+  }
+
+  #complete(target) {
+    const r = this.renderer;
+    const gl = r.getContext();
+    r.setRenderTarget(target);
+    const ok = gl.checkFramebufferStatus(gl.FRAMEBUFFER) === gl.FRAMEBUFFER_COMPLETE;
+    r.setRenderTarget(null);
+    return ok;
   }
 
   dispose() {
-    for (const t of [this.rtScene, this.rtAtmos, ...(this.bloomDown ?? []), ...(this.bloomUp ?? []), ...(this.softDown ?? []), ...(this.softUp ?? [])]) t?.dispose();
+    for (const t of [this.rtScene, this.rtAtmos, this.rtLdr, ...(this.bloomDown ?? []), ...(this.bloomUp ?? []), ...(this.softDown ?? []), ...(this.softUp ?? [])]) t?.dispose();
     this.rtScene?.depthTexture?.dispose();
   }
 
@@ -290,14 +356,28 @@ export class Post {
     a.uTime.value = time;
     this.#pass(this.atmos, this.rtScene, this.rtAtmos);
 
-    const bloom = this.#chain(this.rtAtmos, this.bloomDown, this.bloomUp, this.prefilter);
-    const soft = this.#chain(this.rtAtmos, this.softDown, this.softUp, this.down);
+    const lite = this.lite;
+    const bd = lite && this.bloomDown.length > 2 ? this.bloomDown.slice(0, -1) : this.bloomDown;
+    const bu = lite && this.bloomDown.length > 2 ? this.bloomUp.slice(1) : this.bloomUp;
+    const bloom = this.#chain(this.rtAtmos, bd, bu, this.prefilter);
+    const soft = lite ? this.rtAtmos : this.#chain(this.rtAtmos, this.softDown, this.softUp, this.down);
 
     const f = this.final.uniforms;
     f.tBloom.value = bloom.texture;
     f.tSoft.value = soft.texture;
     f.uTime.value = time;
-    this.#pass(this.final, this.rtAtmos, null);
+    if (this.rtLdr) {
+      const grain = f.uGrain.value;
+      f.uGrain.value = 0;
+      this.#pass(this.final, this.rtAtmos, this.rtLdr);
+      f.uGrain.value = grain;
+      const a = this.aa.uniforms;
+      a.uGrain.value = grain;
+      a.uTime.value = time;
+      this.#pass(this.aa, this.rtLdr, null);
+    } else {
+      this.#pass(this.final, this.rtAtmos, null);
+    }
   }
 
   setGlows(list) {

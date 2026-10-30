@@ -7,11 +7,24 @@ export const MAT = {};
 export const MAT_KEYS = [];
 let ready = false;
 
-const std = (opts) => new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.9, metalness: 0, ...opts });
+// Telefonlarda PBR yerine Lambert: orman yüzeyleri zaten mat olduğu için görünüm neredeyse aynı,
+// ama her pikseldeki ışık hesabı birkaç kat ucuz.
+let lambert = false;
+export function litMaterial(opts = {}) {
+  if (!lambert) return new THREE.MeshStandardMaterial(opts);
+  const { roughness, metalness, envMapIntensity, ...rest } = opts;
+  void roughness;
+  void metalness;
+  void envMapIntensity;
+  return new THREE.MeshLambertMaterial(rest);
+}
 
-export function initMaterials(T, { msaa = false } = {}) {
+const std = (opts) => litMaterial({ vertexColors: true, roughness: 0.9, metalness: 0, ...opts });
+
+export function initMaterials(T, { msaa = false, cheap = false } = {}) {
   if (ready) return MAT;
   ready = true;
+  lambert = cheap;
   const add = (key, m) => {
     MAT[key] = m;
     MAT_KEYS.push(key);

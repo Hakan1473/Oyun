@@ -2,7 +2,7 @@
 
 import { CONFIG } from '../config.js';
 import { formatNumber } from '../core/format.js';
-import { clearSave } from '../core/storage.js';
+import { clearSave, savePref } from '../core/storage.js';
 import { h, haptic } from './dom.js';
 import { icon } from './icons.js';
 import { Sheet } from './sheet.js';
@@ -196,14 +196,36 @@ export class Sheets {
         toggle('Ses efektleri', 'sound', audio.sfxOn, (v) => audio.setSfx(v)),
         toggle('Müzik ve ortam', 'music', audio.musicOn, (v) => audio.setMusic(v)),
       ),
+      this.#qualityPicker(),
       h('div', { class: 'group' },
         document.fullscreenEnabled ? h('button', { class: 'row', onClick: () => toggleFullscreen() }, h('span', { class: 'row-ico', html: icon('expand') }), h('span', { class: 'row-label' }, 'Tam ekran')) : null,
         confirmRow('Baştan başla', 'reset', () => this.restart()),
       ),
-      h('p', { class: 'fine' }, `Kuytu ${CONFIG.version} · Görüntü kalitesi: ${{ high: 'yüksek', medium: 'orta', low: 'düşük' }[g.stage.quality]} · İlerleme bu cihaza kaydedilir.`),
+      h('p', { class: 'fine' }, `Kuytu ${CONFIG.version} · İlerleme bu cihaza kaydedilir.`),
       h('p', { class: 'fine keys' }, 'Bilgisayarda: sürükle ya da WASD ile gez · tekerlek ile yakınlaş · B ile inşa · Esc ile vazgeç · diyalogda Boşluk'),
     );
     sheet.show();
+  }
+
+  // Görüntü kalitesi: seçim cihaza kaydedilir, oyun kaldığı yerden yeniden yüklenir
+  #qualityPicker() {
+    const g = this.game;
+    const opts = [['low', 'Akıcı'], ['medium', 'Dengeli'], ['high', 'En iyi']];
+    const cur = g.stage.quality;
+    const seg = h('div', { class: 'segmented', role: 'radiogroup', 'aria-label': 'Görüntü kalitesi' },
+      ...opts.map(([id, label]) => h('button', {
+        class: `seg ${id === cur ? 'on' : ''}`, role: 'radio', 'aria-checked': String(id === cur),
+        onClick: () => {
+          if (id === cur) return;
+          audio.play('tap');
+          g.save();
+          savePref('quality', id);
+          location.reload();
+        },
+      }, label)));
+    seg.style.setProperty('--i', opts.findIndex(([id]) => id === cur));
+    return h('div', { class: 'quality' }, h('p', { class: 'quality-label' }, 'Görüntü'), seg,
+      h('p', { class: 'fine' }, 'Telefonda takılma olursa "Akıcı"yı seç. Güçlü cihazlarda "En iyi" en yumuşak görüntüyü verir.'));
   }
 
   restart() {
