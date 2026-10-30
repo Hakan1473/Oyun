@@ -24,7 +24,7 @@ createServer(async (req, res) => {
     res.writeHead(404).end('Bulunamadı');
   }
 }).listen(port, '0.0.0.0', () => {
-  console.log(`Yuva hazır:  http://localhost:${port}`);
+  console.log(`Kuytu hazır:  http://localhost:${port}`);
   for (const list of Object.values(networkInterfaces())) {
     for (const n of list ?? []) if (n.family === 'IPv4' && !n.internal) console.log(`Telefondan:  http://${n.address}:${port}`);
   }

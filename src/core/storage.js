@@ -1,5 +1,5 @@
 // Kayıt: tarayıcıya sürümlü JSON olarak yazılır.
-// Kayıt biçimi değişirse MIGRATIONS'a bir adım eklenir; eski köyler kaybolmaz.
+// Kayıt biçimi değişirse MIGRATIONS'a bir adım eklenir; eski kayıtlar kaybolmaz.
 
 import { CONFIG } from '../config.js';
 
@@ -43,7 +43,7 @@ export function clearSave() {
 
 export function loadPref(key, fallback) {
   try {
-    const v = localStorage.getItem(`yuva.pref.${key}`);
+    const v = localStorage.getItem(`kuytu.pref.${key}`);
     return v === null ? fallback : JSON.parse(v);
   } catch {
     return fallback;
@@ -52,7 +52,7 @@ export function loadPref(key, fallback) {
 
 export function savePref(key, value) {
   try {
-    localStorage.setItem(`yuva.pref.${key}`, JSON.stringify(value));
+    localStorage.setItem(`kuytu.pref.${key}`, JSON.stringify(value));
   } catch {
     /* yoksay */
   }
