@@ -1,9 +1,12 @@
-// Yeni köyün başlangıç durumu. Kayıt dosyası bu şekli taşır.
+// Yeni oyunun başlangıç durumu: ormanın ortasındaki açıklık, harabe kulübe, sönmüş ateş,
+// açıklığı saran sık orman ve patikada kulübeye doğru yürüyen dört arkadaş.
 
 import { CONFIG } from '../config.js';
 import { mulberry32 } from '../core/rng.js';
-import { getDef } from '../buildings/index.js';
+import { getDef, levelStats } from '../buildings/index.js';
 import { Grid } from '../engine/grid.js';
+import { CABIN, CAMPFIRE, CLEARING, pathDistance } from '../world/layout.js';
+import { ROSTER } from './roster.js';
 
 export function createFreshState(now = Date.now()) {
   const state = {
@@ -11,63 +14,60 @@ export function createFreshState(now = Date.now()) {
     createdAt: now,
     savedAt: now,
     nextId: 1,
-    resources: { gold: CONFIG.start.gold, wood: CONFIG.start.wood },
-    player: { xp: 0, level: 1 },
-    quests: { index: 0, done: false },
-    stats: { collected: { gold: 0, wood: 0 }, cleared: 0, decor: 0, built: {} },
+    clock: { day: 1, t: 10, total: 0 },
+    resources: { wood: CONFIG.start.wood, food: CONFIG.start.food },
+    survivors: ROSTER.map((r, k) => ({ id: r.id, hp: 100, alive: true, mode: 'idle', x: 9.5 + k * 0.7, z: 9.2 + k * 0.5 })),
     entities: [],
+    tasks: [],
+    flags: {},
+    story: { seen: [], objective: 0 },
+    stats: { chopped: 0, built: 0, nights: 0, shades: 0, deaths: [] },
+    started: false,
   };
-
   const grid = new Grid(CONFIG.grid.size);
   const put = (type, i, j, extra = {}) => {
     const def = getDef(type);
     if (!grid.canPlace(i, j, def.size)) return null;
-    const e = {
-      id: state.nextId++,
-      type,
-      i,
-      j,
-      level: 1,
-      state: 'built',
-      variant: extra.variant ?? (state.nextId * 37) % 997,
-      lastCollect: now - 4 * 60000,
-    };
+    const e = { id: state.nextId++, type, i, j, level: 1, state: 'built', variant: extra.variant ?? state.nextId % 97, ...extra };
+    const lv = levelStats(def, 1);
+    if (lv?.hp) e.hp = lv.hp;
     grid.occupy(e.id, i, j, def.size);
     state.entities.push(e);
     return e;
   };
 
-  // Başlangıç köyü: bir ev, bir kuyu, taş yollar ve saray için boş bırakılmış meydan (14..17)
-  put('house', 18, 19, { variant: 0 });
-  put('well', 12, 19);
-  for (const [i, j] of [[18, 21], [17, 21], [16, 21], [15, 21], [14, 21], [13, 21], [15, 20], [15, 19], [15, 18]]) put('path', i, j);
-  put('flowerbed', 17, 19);
-  put('flowerbed', 20, 21);
-  put('lamp', 16, 20);
-  put('bench', 14, 20);
-  put('tree', 11, 17);
-  put('tree', 20, 17);
-  put('tree', 21, 18);
+  put('cabin', CABIN.i, CABIN.j, { variant: 1 });
+  put('campfire', CAMPFIRE.i, CAMPFIRE.j, { fuel: 0 });
 
-  // Doğal engeller: ortadaki meydanın dışına serpiştirilir
-  const rng = mulberry32(20261030);
-  const reserved = (i, j, s) => i + s > 9 && i < 23 && j + s > 10 && j < 24;
-  const scatter = (type, count) => {
-    const s = getDef(type).size;
-    let n = 0;
-    let guard = 0;
-    while (n < count && guard++ < 500) {
-      const i = rng.int(0, CONFIG.grid.size - s);
-      const j = rng.int(0, CONFIG.grid.size - s);
-      if (reserved(i, j, s)) continue;
-      // Engeller arasında nefes alacak boşluk bırak
-      if (!grid.canPlace(i - 1, j - 1, s + 2) && !(i === 0 || j === 0)) continue;
-      if (put(type, i, j, { variant: rng.int(0, 999) })) n++;
-    }
+  const rng = mulberry32(19840);
+  const N = CONFIG.grid.size;
+  const free = (x, z, pad) => {
+    if (Math.hypot(x - CLEARING.x, z - CLEARING.z) < CLEARING.r + pad) return true;
+    const pd = pathDistance(x, z);
+    return pd.d < pd.path.width / 2 + 0.7 + pad;
   };
-  scatter('oak', 6);
-  scatter('boulder', 3);
-  scatter('pine', 10);
-  scatter('shrub', 8);
+  // Açıklıktaki birkaç çalı ve kaya
+  for (const [type, i, j] of [['berrybush', 12, 15], ['berrybush', 21, 13], ['berrybush', 13, 21], ['boulder', 20, 22], ['boulder', 12, 12]]) {
+    put(type, i, j, { variant: rng.int(0, 50) });
+  }
+  // 2×2 hücrelere ağaçlar
+  for (let i = 0; i < N; i += 2) {
+    for (let j = 0; j < N; j += 2) {
+      const c = grid.center(i, j, 2);
+      if (free(c.x, c.z, 0.2)) continue;
+      const edge = Math.hypot(c.x - CLEARING.x, c.z - CLEARING.z) < CLEARING.r + 3;
+      const r = rng();
+      if (r < 0.06) {
+        put(rng() < 0.6 ? 'berrybush' : 'boulder', i + rng.int(0, 1), j + rng.int(0, 1), { variant: rng.int(0, 50) });
+        continue;
+      }
+      const tr = rng();
+      const type = tr < (edge ? 0.45 : 0.6) ? 'spruce' : tr < 0.82 ? 'deadtree' : 'birch';
+      put(type, i, j, {
+        variant: rng.int(0, type === 'spruce' ? 2 : 1),
+        ox: (rng() - 0.5) * 0.5, oz: (rng() - 0.5) * 0.5, rot: rng() * Math.PI * 2, sc: 0.82 + rng() * 0.3,
+      });
+    }
+  }
   return state;
 }

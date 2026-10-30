@@ -1,5 +1,5 @@
 // Çevrimdışı destek: önce ağ, ağ yoksa önbellek. Güncellemeler hiçbir zaman eski sürümde takılmaz.
-const CACHE = 'yuva-v1';
+const CACHE = 'kuytu-v1';
 
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', (e) => e.waitUntil(self.clients.claim()));

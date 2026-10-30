@@ -1,58 +1,60 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
   <defs>
     <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#7FD0FF"/>
-      <stop offset="0.62" stop-color="#BDE9FF"/>
-      <stop offset="1" stop-color="#E8F8FF"/>
+      <stop offset="0" stop-color="#1b2433"/>
+      <stop offset="0.55" stop-color="#2c3644"/>
+      <stop offset="1" stop-color="#0c0f12"/>
     </linearGradient>
-    <radialGradient id="sun" cx="0.5" cy="0.5" r="0.5">
-      <stop offset="0" stop-color="#FFF6C2"/>
-      <stop offset="0.55" stop-color="#FFD95A"/>
-      <stop offset="1" stop-color="#FFD95A" stop-opacity="0"/>
+    <radialGradient id="moon" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#e9eef2" stop-opacity="0.9"/>
+      <stop offset="0.35" stop-color="#b9c4cf" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#b9c4cf" stop-opacity="0"/>
     </radialGradient>
-    <linearGradient id="hillBack" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#6CC24A"/>
-      <stop offset="1" stop-color="#4E9F35"/>
+    <linearGradient id="fog" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8794a0" stop-opacity="0"/>
+      <stop offset="0.5" stop-color="#8794a0" stop-opacity="0.5"/>
+      <stop offset="1" stop-color="#8794a0" stop-opacity="0"/>
     </linearGradient>
-    <linearGradient id="hillFront" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#9BDA5E"/>
-      <stop offset="1" stop-color="#6DB843"/>
-    </linearGradient>
-    <linearGradient id="roof" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#FF7A5C"/>
-      <stop offset="1" stop-color="#E2452F"/>
-    </linearGradient>
-    <linearGradient id="wall" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0" stop-color="#FFFBF2"/>
-      <stop offset="1" stop-color="#F3E3C6"/>
-    </linearGradient>
+    <radialGradient id="win" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#ffd08a"/>
+      <stop offset="0.4" stop-color="#ff9a3c" stop-opacity="0.6"/>
+      <stop offset="1" stop-color="#ff9a3c" stop-opacity="0"/>
+    </radialGradient>
     <clipPath id="sq"><rect width="120" height="120" rx="27"/></clipPath>
   </defs>
   <g clip-path="url(#sq)">
     <rect width="120" height="120" fill="url(#sky)"/>
-    <circle cx="88" cy="32" r="22" fill="url(#sun)"/>
-    <circle cx="88" cy="32" r="9.5" fill="#FFE27A"/>
-    <path d="M-6 86 C 18 66, 44 70, 66 80 S 108 70, 128 78 V 130 H -6 Z" fill="url(#hillBack)"/>
-    <path d="M-6 96 C 24 82, 58 84, 84 92 S 116 90, 128 94 V 130 H -6 Z" fill="url(#hillFront)"/>
-    <!-- ev -->
-    <ellipse cx="60" cy="92" rx="25" ry="4.2" fill="#3F7F2A" opacity="0.35"/>
-    <rect x="44.5" y="61" width="31" height="30" rx="3" fill="url(#wall)"/>
-    <rect x="70" y="40" width="6.5" height="14" rx="1.6" fill="#B9B2A6"/>
-    <rect x="69" y="38.5" width="8.5" height="3.2" rx="1.4" fill="#8F887C"/>
-    <path d="M38.5 64.5 L58 46 Q60 44.2 62 46 L81.5 64.5 Q83 66 81 66.6 L77 66.6 L60 51 L43 66.6 L39 66.6 Q37 66 38.5 64.5 Z" fill="url(#roof)"/>
-    <path d="M43 66.6 L60 51 L77 66.6" fill="none" stroke="#C63A27" stroke-width="1.6" stroke-linejoin="round" opacity="0.5"/>
-    <path d="M54.5 91 V79 a5.5 5.5 0 0 1 11 0 V91 Z" fill="#8A5530"/>
-    <circle cx="63" cy="85" r="0.9" fill="#FFD640"/>
-    <rect x="48.5" y="69" width="7.5" height="7.5" rx="1.6" fill="#3E6FB8"/>
-    <path d="M52.25 69 V76.5 M48.5 72.75 H56" stroke="#FFFBF2" stroke-width="1.1"/>
-    <path d="M66 72.6 c0-2.4 3.4-3.4 4.4-1.1 c1-2.3 4.4-1.3 4.4 1.1 c0 2.8-4.4 5.2-4.4 5.2 s-4.4-2.4-4.4-5.2z" fill="#FF6B81"/>
-    <circle cx="74" cy="31" r="3.4" fill="#FFFFFF" opacity="0.92"/>
-    <circle cx="78.5" cy="24.5" r="4.4" fill="#FFFFFF" opacity="0.82"/>
-    <circle cx="84.5" cy="17" r="5.4" fill="#FFFFFF" opacity="0.7"/>
-    <!-- çiçekler -->
-    <circle cx="33" cy="94" r="2" fill="#FFD640"/>
-    <circle cx="27" cy="97" r="1.7" fill="#FF8FB5"/>
-    <circle cx="90" cy="96" r="2" fill="#FFFFFF"/>
-    <circle cx="95.5" cy="93.5" r="1.7" fill="#FF6B6B"/>
+    <circle cx="82" cy="30" r="26" fill="url(#moon)"/>
+    <circle cx="82" cy="30" r="8.5" fill="#dfe6ec"/>
+    <!-- uzak ağaçlar -->
+    <g fill="#3a4552" opacity="0.85">
+      <path d="M8 86 L16 50 L24 86Z"/><path d="M26 88 L33 58 L40 88Z"/><path d="M78 86 L86 54 L94 86Z"/><path d="M96 88 L104 48 L112 88Z"/>
+    </g>
+    <rect y="66" width="120" height="22" fill="url(#fog)"/>
+    <!-- uzun siluet -->
+    <g fill="#141a20" opacity="0.9">
+      <rect x="99.2" y="58" width="2.2" height="26" rx="1"/>
+      <ellipse cx="100.3" cy="56" rx="1.9" ry="3"/>
+      <rect x="97.4" y="61" width="1.1" height="20" rx="0.5" transform="rotate(4 98 61)"/>
+      <rect x="102.2" y="61" width="1.1" height="20" rx="0.5" transform="rotate(-4 102.7 61)"/>
+    </g>
+    <!-- yakın ağaçlar -->
+    <g fill="#07090b">
+      <path d="M-4 120 L10 34 L24 120Z"/>
+      <path d="M2 74 L10 46 L18 74Z"/>
+      <path d="M100 120 L113 30 L126 120Z"/>
+      <path d="M106 70 L113 44 L120 70Z"/>
+    </g>
+    <!-- kulübe -->
+    <ellipse cx="60" cy="96" rx="34" ry="5" fill="#000" opacity="0.45"/>
+    <path d="M38 96 V76 L60 60 L82 76 V96Z" fill="#0b0d10"/>
+    <path d="M34 78 L60 57 L86 78" fill="none" stroke="#0b0d10" stroke-width="4" stroke-linejoin="round"/>
+    <rect x="69" y="58" width="5" height="12" fill="#0b0d10"/>
+    <circle cx="51" cy="82" r="12" fill="url(#win)"/>
+    <rect x="47.5" y="78.5" width="7" height="7" rx="0.8" fill="#ffc070"/>
+    <path d="M51 78.5 V85.5 M47.5 82 H54.5" stroke="#5a3010" stroke-width="0.9"/>
+    <rect x="64" y="82" width="7" height="14" fill="#151110"/>
+    <rect y="94" width="120" height="26" fill="#060708"/>
+    <rect y="88" width="120" height="12" fill="url(#fog)" opacity="0.7"/>
   </g>
 </svg>

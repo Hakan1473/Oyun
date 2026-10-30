@@ -3,20 +3,20 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-  <meta name="description" content="Yuva — izometrik, sıcacık bir köy kurma oyunu. Saray kur, evler yap, köylülerini mutlu et.">
-  <meta name="theme-color" content="#7fd0ff">
-  <meta name="color-scheme" content="light">
+  <meta name="description" content="Kuytu — sisli bir ormanın ortasında, harabe bir kulübede hayatta kalma ve korku oyunu. Gündüz inşa et, gece ışığı koru.">
+  <meta name="theme-color" content="#0b0e12">
+  <meta name="color-scheme" content="dark">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Yuva">
-  <title>Yuva</title>
+  <meta name="apple-mobile-web-app-title" content="Kuytu">
+  <title>Kuytu</title>
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="assets/icons/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Manrope:wght@500;600;700;800&display=swap">
   <link rel="stylesheet" href="styles/main.css">
   <script type="importmap">
     {
@@ -29,27 +29,26 @@
 </head>
 <body>
   <div id="app">
-    <canvas id="scene" aria-label="Köy"></canvas>
-    <div class="vignette" aria-hidden="true"></div>
+    <canvas id="scene" aria-label="Orman"></canvas>
     <div id="overlay" class="overlay"></div>
     <div id="hud" class="hud"></div>
+    <div id="dialogue"></div>
     <div id="sheets"></div>
 
     <div id="splash" class="splash">
-      <div class="splash-glow" aria-hidden="true"></div>
       <div class="splash-center">
-        <div class="splash-icon" aria-hidden="true">
-          <img src="assets/icons/icon.svg" alt="" width="120" height="120">
-        </div>
-        <h1 class="wordmark">Yuva</h1>
-        <p class="splash-note">Köy uyanıyor…</p>
+        <p class="splash-eyebrow">Bölüm 1</p>
+        <h1 class="wordmark">KUYTU</h1>
+        <div class="splash-rule" aria-hidden="true"></div>
+        <p class="splash-note">Ormanda bir gece daha.</p>
         <div class="splash-progress" aria-hidden="true"><i></i></div>
-        <button class="splash-play" type="button"><span>Oyna</span></button>
+        <button class="splash-play" type="button"><span>Başla</span></button>
+        <button class="splash-new" type="button" hidden>Yeni oyun</button>
       </div>
-      <p class="splash-foot">Sürükle · yakınlaştır · inşa et</p>
+      <p class="splash-foot">En iyi deneyim için kulaklık takın</p>
     </div>
   </div>
-  <noscript><p class="noscript">Yuva'yı oynamak için JavaScript gerekir.</p></noscript>
+  <noscript><p class="noscript">Kuytu'yu oynamak için JavaScript gerekir.</p></noscript>
   <script type="module" src="src/main.js"></script>
 </body>
 </html>

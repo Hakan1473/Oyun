@@ -1,10 +1,9 @@
-// Tüm binalar buradan kaydedilir. Yeni bir bina eklemek için:
+// Tüm yapılar buradan kaydedilir. Yeni bir yapı eklemek için:
 //   1) src/buildings/ altına bir dosya açın, defineBuilding({...}) ile tanımlayın
-//   2) Aşağıya tek satır import ekleyin. Hepsi bu — mağaza, kayıt ve köylüler onu tanır.
+//   2) Aşağıya tek satır import ekleyin. Mağaza, kayıt, karakterler ve gece varlıkları onu tanır.
 
-import './palace.js';
-import './house.js';
-import './resources.js';
-import './decor.js';
+import './cabin.js';
+import './camp.js';
+import './nature.js';
 
 export * from './registry.js';

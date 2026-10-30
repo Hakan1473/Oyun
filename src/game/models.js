@@ -1,9 +1,8 @@
-// Bina tanımından sahne nesnesi üretir. Statik geometri önbelleğe alınır;
-// bayrak gibi hareketli parçalar her örnek için yeniden yaratılır.
+// Yapı tanımından sahne nesnesi üretir. Statik geometri önbelleğe alınır;
+// ışıklar, ateşler ve yanıp sönen parçalar her örnek için ayrıca tanımlanır.
 
 import * as THREE from 'three';
 import { Kit } from '../engine/kit.js';
-import { MATERIALS } from '../engine/materials.js';
 import { mulberry32 } from '../core/rng.js';
 
 class NullKit extends Kit {
@@ -14,16 +13,17 @@ class NullKit extends Kit {
 
 const cache = new Map();
 
-export function buildModel(def, { level = 1, variant = 0 } = {}) {
-  const key = `${def.id}:${level}:${variant}`;
+export function buildModel(def, { level = 1, variant = 0, state = 'built' } = {}) {
+  const key = `${def.id}:${level}:${variant}:${state === 'picked' ? 'p' : ''}`;
   const hit = cache.get(key);
   const kit = hit ? new NullKit() : new Kit();
   const dynamics = [];
-  const anchors = {};
+  const anchors = { smoke: [], lights: [], fires: [], blinks: [] };
   const ctx = {
     kit,
     level,
     variant,
+    state,
     rng: mulberry32(variant * 7919 + level * 131 + 17),
     door: null,
     dynamic(obj, update, dispose) {
@@ -31,7 +31,16 @@ export function buildModel(def, { level = 1, variant = 0 } = {}) {
       dynamics.push({ obj, update, dispose });
     },
     anchor(name, x, y, z) {
-      (anchors[name] ||= []).push(new THREE.Vector3(x, y, z));
+      anchors[name].push(new THREE.Vector3(x, y, z));
+    },
+    light(spec) {
+      anchors.lights.push({ ...spec, pos: new THREE.Vector3(spec.x, spec.y, spec.z) });
+    },
+    fire(spec) {
+      anchors.fires.push({ ...spec, pos: new THREE.Vector3(spec.x, spec.y, spec.z) });
+    },
+    blink(spec) {
+      anchors.blinks.push(new THREE.Vector3(spec.x, spec.y, spec.z));
     },
   };
   def.model(ctx);
@@ -39,10 +48,10 @@ export function buildModel(def, { level = 1, variant = 0 } = {}) {
   let mesh;
   if (hit) {
     mesh = new THREE.Mesh(hit.geometry, hit.material);
-    mesh.userData.slotMap = hit.slotMap;
+    mesh.userData.baseMaterial = hit.material;
   } else {
-    mesh = kit.build(MATERIALS);
-    cache.set(key, { geometry: mesh.geometry, material: mesh.material, slotMap: mesh.userData.slotMap });
+    mesh = kit.build();
+    cache.set(key, { geometry: mesh.geometry, material: mesh.material });
   }
   mesh.castShadow = def.castShadow !== false;
   mesh.receiveShadow = true;

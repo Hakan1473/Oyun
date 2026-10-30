@@ -1,18 +1,28 @@
-# Yuva
+# Kuytu
 
-**Küçük bir köy. Büyük bir hikâye.**
+**Ormanda bir gece daha.**
 
-Yuva, tarayıcıda çalışan izometrik bir köy kurma oyunudur. Kamera tepeden, sabit bir "tanrı bakışı" açısıyla bakar; binalar üç boyutlu modellenir ama sahne dönmez. Telefonda dokunarak, bilgisayarda fareyle oynanır. Kurulum gerekmez.
+Kuytu, tarayıcıda çalışan, tepeden sabit açıyla bakılan bir hayatta kalma ve korku oyunudur. Dört arkadaş kamp yaparken ormanda bir şeyle karşılaşır, kaçar ve sisin ortasında, sık ağaçlarla çevrili harabe bir kulübe bulur. Gündüz ağaç keser, kulübeyi onarır, ışık ve barikat kurarsın. Gece ormandan gölgeler çıkar. Işıktan korkarlar ama karanlıkta kalanı alırlar. Grubu sen yönetirsin; verdiğin bazı kararlar geri alınamaz.
+
+Telefonda dokunarak, bilgisayarda fareyle oynanır. Kurulum gerekmez.
+
+## Hikâye — Bölüm 1
+
+- **Ece:** Tıp öğrencisi. Sakin, grubun vicdanı. Yanındakiler daha hızlı iyileşir.
+- **Kaan:** Rugbi oyuncusu. Güçlü, aceleci. Kayıp arkadaşları Bora'yı ormanda bırakmayı kendine yediremiyor.
+- **Defne:** Fotoğrafçı. O uzun şekli ilk gören oydu. Feneri daha uzağa vurur.
+- **Mert:** Mühendislik öğrencisi. Gergin oldukça espri yapar. Her şeyi tamir eder.
+
+Önsöz, kulübeye varış, Bora'yı arayıp aramama kararı, gece duyulan "Bora'nın sesi", kulübede bulunan eski telsiz ve ikinci gece süreli bir feda kararı vardır. Kararlar bayrak bırakır; erken verilen bir karar sonraki sahnede kimin yaşayacağını değiştirebilir.
 
 ## Oynanış
 
-- **Saray kur.** Meydan sarayın için boş bırakıldı. Saray köyün kalbidir: seviyesi arttıkça yeni yapılar açılır, depolar genişler.
-- **Ev yap.** Her ev köye yeni köylüler getirir ve küçük bir vergi (altın) üretir.
-- **Kaynak topla.** Oduncu kereste, Pazar altın üretir. Binanın üstünde baloncuk belirince ona dokun.
-- **Ustalar.** Aynı anda iki inşaat yürür. Sarı baretli ustalar şantiyeye koşar ve çekiç sallar.
-- **Temizle ve süsle.** Yaşlı meşeleri, çamları, kayaları temizle; çiçeklik, fener, bank, çeşme ve taş yollarla köyünü güzelleştir. Köylüler taş yolları sever.
-- **Görevler** seni adım adım yönlendirir ve ödül verir.
-- İlerleme cihaza otomatik kaydedilir. Sen yokken üretim ve inşaatlar devam eder.
+- **Gün döngüsü:** Gündüz, alacakaranlık, gece ve şafak. Gündüzü erken bitirmek için "Geceyi bekle".
+- **Ağaç kes:** Bir ağaca dokun, "Kes". En yakın boştaki kişi gider ve keser. Ağaç devrilir, odun kazanırsın, açıklık genişler. Bir kişiyi seçip ağaca dokunursan işi o yapar.
+- **Kamp ateşi:** Gecenin tek dostudur. Odunla beslenir; sönerse karanlık gelir.
+- **Yapılar:** meşale, fener direği, barikat, kapan, branda barınak, odunluk, av tuzağı, telsiz direği. Kulübeyi onarıp güçlendirdikçe daha fazlası açılır.
+- **Gölgeler:** Işığın kıyısında dolaşır, önce ışıkları söndürmeye çalışır, karanlıkta kalanı avlar. Barikatları kırar, kapanlara basar. Gece bir gölgeye dokunursan fenerler ona çevrilir.
+- **Hayatta kalma:** Her şafakta herkes erzak yer. Erzak yetmezse açlık herkesi zayıflatır. Yaralılar gündüz, özellikle barınak yanında iyileşir. Ölüm kalıcıdır.
 
 ## Kontroller
 
@@ -20,94 +30,76 @@ Yuva, tarayıcıda çalışan izometrik bir köy kurma oyunudur. Kamera tepeden,
 |---|---|---|
 | Gezinmek | Bir parmakla sürükle | Sürükle, WASD ya da ok tuşları |
 | Yakınlaşmak | İki parmakla sıkıştır | Fare tekerleği, + / − |
-| Seçmek | Dokun | Tıkla |
-| Bina taşımak | Seçili binayı sürükle | Seçili binayı sürükle |
-| İnşa menüsü | "İnşa Et" düğmesi | B |
-| Vazgeçmek | ✕ | Esc |
+| Seçmek, emir vermek | Dokun | Tıkla |
+| İnşa menüsü | "İnşa" düğmesi | B |
+| Diyalog | Dokun | Boşluk / Enter, seçimler için 1–3 |
 
 ## Çalıştırma
 
-Oyun derleme gerektirmez; herhangi bir statik sunucu yeter.
+Derleme gerekmez:
 
 ```bash
 node tools/serve.mjs        # http://localhost:5173 — aynı ağdaki telefondan da açılır
 ```
 
-Tek dosyalık, paylaşılabilir sürüm (`dist/yuva.html`):
+Tek dosyalık sürüm (`dist/kuytu.html`):
 
 ```bash
 npm install
 npm run build
 ```
 
-GitHub Pages'te yayınlamak için depo ayarlarından *Pages → Deploy from branch* seçip kök klasörü göstermek yeterli. Telefonda "Ana Ekrana Ekle" ile tam ekran uygulama gibi açılır.
+Düşük donanımda kalite elle seçilebilir: `?q=low`, `?q=medium`, `?q=high`.
+
+## Görüntü teknolojisi
+
+- **Dokular:** Kabuk, eskimiş tahta, yosunlu ahşap pullar, taş, orman toprağı, patika, ladin iğneleri, eğrelti ve yapraklar açılışta prosedürel olarak boyanır. Hiç görsel dosya yoktur.
+- **Yumuşak geometri:** Sarkık dal katmanlı ladinler, eğri tüplerden dallanan ölü ağaçlar, gürültüyle şekillenen kayalar.
+- **Render hattı:** HDR sahne ve derinlik üzerinden yere çöken, hareket eden sis. Ateşlerin sise saçılan ışığı, bloom, kenarlarda bulanıklık ve renk sapması, ACES ton eşleme, gün saatine göre renk derecelendirmesi, film greni, sinematik bantlar.
+- **Işık:** Ateşler ve meşaleler titreyen nokta ışıklardır. Gece fener hüzmeleri ve gerçek spot ışıklar devreye girer. Gölgeler önbellekte tutulur.
+- **Uyarlanabilir kalite:** Kare hızı düşerse çözünürlük kendiliğinden ayarlanır.
 
 ## Mimari
 
 ```
-index.html              giriş ekranı ve sayfa iskeleti
-styles/main.css         arayüz tasarım dili (cam yüzeyler, yuvarlak yazı, yaylı hareket)
 src/
-  config.js             tüm ayarlanabilir sabitler
-  main.js               açılış: sahne → kayıt → arayüz → döngü
-  core/                 olay yolu, kayıt (sürümlü), tohumlu rastgele, biçimlendirme
+  config.js              ayarlar (ızgara, kamera, hayatta kalma sabitleri)
+  main.js                açılış
   engine/
-    stage.js            çizici, ışıklar, önbellekli gölgeler, uyarlanır çözünürlük
-    camera.js           sabit açılı ortografik kamera; kaydırma, sıkıştırma, atalet
-    input.js            dokunma / fare / klavye → tap, sürükle, yakınlaştır
-    kit.js              modelleme kiti: ilkel şekilleri tek ağa birleştirir
-    grid.js             ızgara ve doluluk haritası
-    fx.js               parçacıklar (duman, toz, kıvılcım, yaprak, konfeti)
-    overlay.js          dünyaya iliştirilmiş HTML (etiket, sayaç, baloncuk)
-  world/                arazi, orman, nehir, köylüler, yol bulma (A*)
-  buildings/            her bina kendi dosyasında; registry.js kayıt defteri
-  game/                 oyun yöneticisi, kurallar, görevler, başlangıç köyü
-  ui/                   HUD, mağaza, bilgi ve ayar sayfaları, simgeler, küçük resimler
-  audio/                Web Audio ile anında üretilen sesler ve müzik kutusu
-vendor/three/           Three.js r170 (MIT)
-tools/                  yerel sunucu, tek dosya derleyici, simge üretici
+    textures.js          prosedürel doku stüdyosu
+    materials.js         malzeme kütüphanesi (anahtar adlarla)
+    kit.js, geo.js       modelleme kiti, eğri tüp, kaya, kumaş
+    post.js              sis, bloom, kenar bulanıklığı, son geçiş
+    stage.js, camera.js, input.js, grid.js, fx.js, overlay.js
+  world/
+    trees.js, forest.js  ağaç geometrileri; orman ve kesilebilir ağaçlar (örnekli)
+    ground.js, layout.js zemin, çimen, eğrelti, mantar; patikalar ve açıklık
+    cycle.js, lights.js  gün döngüsü, ışık havuzu
+    rigs.js              insan ve gölge iskeletleri, prosedürel animasyon
+    survivors.js         görevler, nöbet, fener, kaçma, sığınma
+    creatures.js         gölge yapay zekâsı
+  buildings/             kulübe, kamp yapıları, doğa; registry.js kayıt defteri
+  game/
+    game.js              görevler, inşa, hasar, ölüm, gün olayları, kayıt
+    story.js             Bölüm 1 sahneleri ve kararlar
+    roster.js            karakterler
+    rules.js, state.js, models.js, entity-view.js
+  ui/                    HUD, diyalog, sayfalar, portreler, simgeler
+  audio/audio.js         dron, rüzgâr, kalp atışı, fısıltılar ve tüm efektler
 ```
 
-Tüm modeller kodla, köşe renkleriyle üretilir; her bina tek çizim çağrısına birleştirilir. Görsel dosya ya da ses dosyası yoktur.
+## Genişletmek
 
-## Yeni bir bina eklemek
+**Yeni yapı:** `src/buildings/` altında `defineBuilding({...})` tanımı yazıp `buildings/index.js` dosyasına bir `import` satırı eklemek yeterli. `light`, `hp`, `storage`, `produces`, `blocksCreatures` alanlarını oyun kendiliğinden tanır.
 
-1. `src/buildings/` altına bir dosya açın:
+**Yeni sahne:** `src/game/story.js` içindeki `SCENES` listesine bir öğe ekle. Tetikleyiciler `newgame`, `arrived`, `dusk`, `night`, `dawn`, `day`, `built`, `upgraded`, `chopped`, `death`, `returned` ve `tick` olaylarıdır. Adım türleri konuşma, anlatıcı, seçim (`permanent`, `timer`) ve eylemdir. Eylemler `sendAway`, `killSurvivor`, `stageSiege` gibi `game` metotlarını kullanır.
 
-```js
-import { defineBuilding } from './registry.js';
-import { C } from '../engine/palette.js';
-import { pad, gableRoof, door, onFace } from './parts.js';
-
-defineBuilding({
-  id: 'bakery',
-  name: 'Fırın',
-  description: 'Mis gibi ekmek kokusu köyü sarar.',
-  category: 'resource',            // village | resource | decor | obstacle
-  size: 2,
-  limit: ({ palaceLevel }) => palaceLevel,
-  levels: [
-    { cost: { gold: 300, wood: 200 }, time: 20, xp: 25, requires: { palace: 1 },
-      produces: { resource: 'gold', rate: 10, capacity: 100 } },
-  ],
-  model({ kit, level, rng, anchor }) {
-    const y0 = pad(kit, 2);
-    kit.box(1.2, 0.8, 1.0, C.wallButter, { y: y0 + 0.4, r: 0.03 });
-    gableRoof(kit, { len: 1.2, depth: 1.0, rise: 0.45, y: y0 + 0.8, color: C.roofOrange, gable: C.wallButter });
-    onFace(kit, '+z', 0.5, 0, y0, () => door(kit));
-    anchor('smoke', 0.3, y0 + 1.5, -0.2); // bacadan duman
-  },
-});
-```
-
-2. `src/buildings/index.js` dosyasına `import './bakery.js';` satırını ekleyin.
-
-Mağaza kartı, 3B küçük resim, yerleştirme, inşaat, üretim, kayıt ve köylüler yeni binayı kendiliğinden tanır. Yeni görev eklemek için `src/game/quests.js` listesine bir öğe eklemek yeterlidir.
+**Yeni karakter:** `src/game/roster.js` içine görünüş ve yeteneklerle bir kayıt ekle.
 
 ## Yol haritası
 
-- Hikâye bölümleri ve köy karakterleri (muhtar, demirci, gezgin tüccar)
-- Gece–gündüz döngüsü, mevsimler ve hava durumu
-- Yeni yapılar: fırın, demirci, değirmen, kütüphane, liman
-- Arazi genişletme ve köy düzeni kaydetme
-- Başarılar ve günlük ödüller
+- Bölüm 2: telsizdeki ses, patikanın sonu, Bora'nın izi
+- Yeni gölge türleri (sürünen, taklitçi), sis yoğunlaşması olayları
+- Akıl sağlığı ve moral; karakterler arası güven
+- Keşif seferleri, erzak ve parça toplama
+- Seslendirilmiş diyaloglar

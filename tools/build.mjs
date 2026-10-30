@@ -1,4 +1,4 @@
-// Tek dosyalık sürüm üretir: dist/yuva.html (tüm kod, stil ve logo içine gömülü).
+// Tek dosyalık sürüm üretir: dist/kuytu.html (tüm kod, stil ve logo içine gömülü).
 // Paylaşmak ya da herhangi bir statik barındırmaya koymak için. Kullanım: npm run build
 import { build } from 'esbuild';
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
@@ -39,5 +39,5 @@ html = html
   .replace(/<script type="module" src="src\/main.js"><\/script>/, () => `<script type="module">${js}</script>`);
 
 mkdirSync(join(root, 'dist'), { recursive: true });
-writeFileSync(join(root, 'dist/yuva.html'), html);
-console.log(`dist/yuva.html  ${(html.length / 1024).toFixed(0)} KB`);
+writeFileSync(join(root, 'dist/kuytu.html'), html);
+console.log(`dist/kuytu.html  ${(html.length / 1024).toFixed(0)} KB`);

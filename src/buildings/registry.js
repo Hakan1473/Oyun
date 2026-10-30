@@ -2,15 +2,16 @@
 // ve buildings/index.js içinden içe aktarılır. Oyunun geri kalanı binaları buradan tanır.
 //
 // Tanım alanları:
-//   id, name, description, category: 'village' | 'resource' | 'decor' | 'obstacle'
-//   size            — kare ayak izi (karo)
-//   solid           — köylüler üzerinden yürüyemez mi (varsayılan: true)
-//   pathCost        — yürünebilir binalarda yol maliyeti (yollar < 1)
-//   levels[]        — { cost, time, xp, requires: { palace }, produces, storage, villagers }
-//   limit(ctx)      — palaceLevel'e göre izin verilen adet
-//   model(m)        — m.kit'e parçalar ekler; m.level, m.variant, m.rng, m.dynamic(obj, fn), m.anchor(ad, x, y, z)
-//   clear           — engeller için { cost, reward, xp, label }
-//   repeat          — yerleştirdikten sonra yanına bir tane daha önerilsin mi (yollar)
+//   id, name, description, category: 'defense' | 'shelter' | 'survival' | 'nature'
+//   size            — kare ayak izi (karo = 1 metre)
+//   levels[]        — { name, cost: { wood, food }, work (saniye), hp, light: { radius, intensity },
+//                       storage, produces: { resource, rate (dakikada), capacity }, requires: { cabin } }
+//   limit(ctx)      — ctx.cabinLevel ve ctx.flags'e göre izin verilen adet
+//   model(m)        — m.kit'e parçalar ekler; m.light(), m.fire(), m.anchor('smoke', …), m.blink()
+//   clear / harvest — doğa nesneleri için { verb, work, reward }
+//   instanced       — örnekli çizilen (ağaçlar)
+//   blocksCreatures — gölgeler önce bunu kırmak zorunda (barikat)
+//   repeat          — yerleştirdikten sonra yanına bir tane daha önerilsin mi
 
 const defs = new Map();
 

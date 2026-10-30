@@ -1,4 +1,4 @@
-// Yuva — giriş noktası. Sahneyi kurar, kaydı yükler, arayüzü bağlar ve döngüyü başlatır.
+// Kuytu — giriş noktası. Dokuları boyar, dünyayı kurar, kaydı yükler, arayüzü bağlar ve döngüyü başlatır.
 
 import { CONFIG } from './config.js';
 import { loadSave } from './core/storage.js';
@@ -8,14 +8,20 @@ import { CameraRig } from './engine/camera.js';
 import { Input } from './engine/input.js';
 import { FX } from './engine/fx.js';
 import { Overlay } from './engine/overlay.js';
-import { setHighlightPulse } from './engine/materials.js';
-import { Terrain } from './world/terrain.js';
+import { createTextures } from './engine/textures.js';
+import { initMaterials, setHighlightPulse } from './engine/materials.js';
+import { Ground, Flora } from './world/ground.js';
+import { Forest, TreeField } from './world/forest.js';
+import { Lights } from './world/lights.js';
+import { Cycle } from './world/cycle.js';
 import { allDefs } from './buildings/index.js';
 import { createFreshState } from './game/state.js';
 import { Game } from './game/game.js';
+import { Story } from './game/story.js';
 import { Hud } from './ui/hud.js';
 import { Sheets } from './ui/sheets.js';
 import { Thumbs } from './ui/thumbs.js';
+import { Dialogue } from './ui/dialogue.js';
 import { Splash } from './ui/splash.js';
 import { ICON_DEFS } from './ui/icons.js';
 import { audio } from './audio/audio.js';
@@ -25,7 +31,7 @@ const nextFrame = () => new Promise((r) => requestAnimationFrame(() => r()));
 async function boot() {
   const splash = new Splash();
   document.body.insertAdjacentHTML('afterbegin', ICON_DEFS);
-  splash.progress(0.1);
+  splash.progress(0.04);
   await nextFrame();
 
   const canvas = document.getElementById('scene');
@@ -34,15 +40,16 @@ async function boot() {
     stage = new Stage(canvas, CONFIG);
   } catch (err) {
     console.error(err);
-    splash.fail('Bu cihaz 3B grafikleri (WebGL) desteklemiyor.');
+    splash.fail('Bu cihaz 3B grafikleri (WebGL 2) desteklemiyor.');
     return;
   }
+  const T = await createTextures({ quality: stage.quality, onProgress: (k) => splash.progress(0.05 + k * 0.4) });
+  initMaterials(T, { msaa: stage.msaa });
+
   const rig = new CameraRig(stage, CONFIG);
   const resize = () => {
     const vv = window.visualViewport;
-    const w = Math.round(vv?.width ?? window.innerWidth);
-    const hgt = Math.round(vv?.height ?? window.innerHeight);
-    stage.resize(w, hgt);
+    stage.resize(Math.round(vv?.width ?? window.innerWidth), Math.round(vv?.height ?? window.innerHeight));
     rig.ppuGoal = rig.clampPpu(rig.ppuGoal);
     rig.ppu = rig.clampPpu(rig.ppu);
     rig.apply();
@@ -50,35 +57,47 @@ async function boot() {
   resize();
   window.addEventListener('resize', resize);
   window.visualViewport?.addEventListener('resize', resize);
-  splash.progress(0.25);
   await nextFrame();
 
-  const terrain = new Terrain(stage, CONFIG);
-  splash.progress(0.5);
+  const ground = new Ground(stage, CONFIG, T);
+  const flora = new Flora(stage, CONFIG, ground, stage.quality);
+  splash.progress(0.55);
+  await nextFrame();
+  new Forest(stage, CONFIG, ground, stage.quality);
+  splash.progress(0.72);
   await nextFrame();
 
   const saved = loadSave();
   const state = saved ?? createFreshState();
   const fx = new FX(stage);
+  const lights = new Lights(stage, stage.post);
   const overlay = new Overlay(document.getElementById('overlay'), rig);
-  const game = new Game({ stage, rig, terrain, fx, overlay, state });
-  splash.progress(0.7);
+  // Giriş ekranında orman gece görünür
+  const splashClock = { clock: { day: 1, t: 210, total: 0 } };
+  const cycle = new Cycle(stage, splashClock);
+  const field = new TreeField(stage, null);
+  const game = new Game({ stage, rig, fx, overlay, lights, cycle, ground, flora, field, state });
+  field.grid = game.grid;
+  splash.progress(0.82);
   await nextFrame();
 
-  // Mağaza resimlerini önceden hazırla
   const thumbs = new Thumbs(CONFIG);
-  const defs = allDefs().filter((d) => d.shop);
-  for (let k = 0; k < defs.length; k++) {
-    thumbs.get(defs[k].id, 1, 0);
-    if (k % 3 === 2) {
-      splash.progress(0.7 + (0.28 * k) / defs.length);
-      await nextFrame();
-    }
-  }
+  for (const d of allDefs().filter((x) => x.shop)) thumbs.get(d.id, 1, 0);
+  for (const s of game.survivors.list) thumbs.portrait(s.def);
+  splash.progress(0.95);
+  await nextFrame();
 
   const sheets = new Sheets(game, thumbs);
-  const hud = new Hud(document.getElementById('hud'), game, sheets);
-  game.emitAll();
+  const hud = new Hud(document.getElementById('hud'), game, sheets, thumbs);
+  const dialogue = new Dialogue(document.getElementById('dialogue'), stage, thumbs);
+  const story = new Story(game, {
+    open: async (o) => { hud.hideFor(true); await dialogue.open(o); },
+    close: async (o) => { await dialogue.close(o); hud.hideFor(false); },
+    say: (c, t) => dialogue.say(c, t),
+    narrate: (t) => dialogue.narrate(t),
+    choose: (o) => dialogue.choose(o),
+  });
+  bus.on('open-shop', () => sheets.shop());
 
   const input = new Input(canvas, rig, {
     onTap: (x, y) => game.onTap(x, y),
@@ -90,16 +109,13 @@ async function boot() {
     onPress: () => audio.unlock(),
   });
   input.enabled = false;
-  bus.on('open-shop', () => sheets.shop());
 
-  // Giriş sahnesi: uzaktan, yavaşça süzülen kamera
-  const palace = state.entities.find((e) => e.type === 'palace');
-  const focus = palace ? game.grid.center(palace.i, palace.j, 4) : { x: 0, z: 1.5 };
-  rig.target.set(focus.x - 4, 0, focus.z - 4);
+  // Giriş: ormanın üstünde süzülen kamera
+  rig.target.set(-6, 0, -5);
   rig.ppu = rig.ppuGoal = rig.clampPpu(CONFIG.camera.splashPpu);
   rig.apply();
-
   let intro = true;
+  game.paused = true;
   let last = performance.now();
   let t = 0;
   stage.markShadows();
@@ -108,17 +124,20 @@ async function boot() {
     last = now;
     t += dt;
     if (intro) {
-      rig.target.x += dt * 0.35;
-      rig.target.z += dt * 0.35;
+      rig.target.x += dt * 0.3;
+      rig.target.z += dt * 0.3;
       rig.apply();
     }
     input.update(dt);
     rig.update(dt);
     game.update(dt, t);
-    terrain.update(dt);
-    fx.update(dt, rig.ppu, stage.dpr);
+    story.update(dt);
+    cycle.apply(dt);
+    flora.update(dt);
+    lights.update(dt, rig.target, cycle.darkness);
+    fx.update(dt, rig.ppu, stage.dpr, t);
     setHighlightPulse(t);
-    stage.render();
+    stage.render(t);
     overlay.update();
     hud.update();
     stage.adapt(dt, now);
@@ -126,22 +145,33 @@ async function boot() {
   };
   requestAnimationFrame(loop);
 
-  await splash.ready(!!saved);
+  await splash.ready(!!saved && state.started);
   audio.unlock();
-  audio.play('open');
   intro = false;
-  rig.flyTo({ x: focus.x, z: focus.z, ppu: CONFIG.camera.ppu * (stage.width < 600 ? 0.95 : 1.05) }, 1.6);
-  setTimeout(() => {
+  game.paused = false;
+  cycle.state = state;
+  game.emitAll();
+  input.enabled = true;
+  const dev = new URLSearchParams(location.search).has('dev');
+  if (!state.started && dev) {
+    // Geliştirme: girişi atla, grup ateşin başında
+    state.started = true;
+    state.story.seen.push('prologue', 'arrival');
+    const f = game.fireSpot();
+    game.survivors.list.forEach((s, k) => s.pos.set(f.x - 1 + k * 0.8, f.y + 0.8));
+    rig.flyTo({ x: 0, z: 2.5, ppu: 40 }, 0.5);
     hud.show();
-    input.enabled = true;
-  }, 450);
-
-  // Geliştirme ve hata ayıklama için
-  window.yuva = { game, stage, rig, CONFIG };
-
-  if ('serviceWorker' in navigator && location.protocol === 'https:' && window.self === window.top) {
-    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  } else if (!state.started) {
+    state.started = true;
+    rig.flyTo({ x: 6, z: 7, ppu: 34 }, 2.2);
+    bus.emit('story', { type: 'newgame' });
+    setTimeout(() => hud.show(), 1500);
+  } else {
+    rig.flyTo({ x: 0, z: 2.5, ppu: stage.width < 600 ? 36 : 42 }, 1.8);
+    setTimeout(() => hud.show(), 600);
+    audio.setMood(cycle.phase);
   }
+  window.kuytu = { game, stage, rig, cycle, story, CONFIG };
 }
 
 boot();

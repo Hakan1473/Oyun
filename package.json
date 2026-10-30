@@ -1,8 +1,8 @@
 {
-  "name": "yuva",
-  "version": "0.1.0",
+  "name": "kuytu",
+  "version": "0.2.0",
   "private": true,
-  "description": "Yuva — izometrik köy kurma oyunu (tarayıcıda çalışır)",
+  "description": "Kuytu — ormanda hayatta kalma ve korku oyunu (tarayıcıda çalışır)",
   "type": "module",
   "scripts": {
     "dev": "node tools/serve.mjs",

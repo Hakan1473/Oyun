@@ -2,37 +2,44 @@
 // Yeni bir özellik eklerken önce buraya bakın.
 
 export const CONFIG = {
-  version: '0.1.0',
+  version: '0.2.0',
+  title: 'Kuytu',
 
   grid: {
-    size: 32, // inşa edilebilir alan (kare, karo sayısı)
-    border: 18, // alanın çevresindeki orman/nehir kuşağı
+    size: 36, // oynanabilir alan (kare, karo = 1 metre)
+    border: 34, // alanın çevresindeki sonsuz hissi veren orman
   },
 
   camera: {
-    elevation: 34, // derece — "tanrı bakışı" eğimi
-    azimuth: 45, // derece — sabit izometrik yön, dönmez
-    ppu: 48, // varsayılan yakınlık (dünya birimi başına CSS pikseli)
-    ppuMin: 20,
-    ppuMax: 150,
-    splashPpu: 26,
+    elevation: 42, // derece — tepeden, hafif eğik bakış
+    azimuth: 45, // derece — sabit yön, sahne dönmez
+    ppu: 40, // varsayılan yakınlık (dünya birimi başına CSS pikseli)
+    ppuMin: 13,
+    ppuMax: 110,
+    splashPpu: 18,
   },
 
-  builders: 2, // aynı anda yürüyebilecek inşaat sayısı
-
   start: {
-    gold: 800,
-    wood: 600,
+    wood: 30,
+    food: 14,
   },
 
   baseStorage: {
-    gold: 1500,
-    wood: 1500,
+    wood: 0,
+    food: 0,
+  },
+
+  survival: {
+    foodPerSurvivor: 2, // her şafakta
+    hungerDamage: 22,
+    fuelPerWood: 9, // bir odun ateşi kaç saniye besler
+    feedAmount: 10, // "Ateşi besle" bir seferde kaç odun atar
+    healPerSecond: 0.35, // gündüz kendiliğinden iyileşme
   },
 
   save: {
-    key: 'yuva.save',
+    key: 'kuytu.save',
     version: 1,
-    autosaveMs: 6000,
+    autosaveMs: 5000,
   },
 };
