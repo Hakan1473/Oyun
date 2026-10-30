@@ -146,14 +146,14 @@ export const SCENES = [
   {
     id: 'night2Voice',
     when: (ev) => ev.type === 'night' && ev.day === 2,
-    delay: 18,
+    delay: 8,
     steps: [
       {
         if: (s, g) => s.flags.followVoice && alive(g, 'kaan'),
         then: [
           { narrate: 'Ormanın içinden bir ses: "Kaan... Kaan, buradayım..."' },
           { who: 'kaan', text: 'Bu o. Gidiyorum.' },
-          { do: (g) => g.sendAway(['kaan'], 60, 'kaanBack', { into: 'deep' }) },
+          { do: (g) => g.sendAway(['kaan'], 14, 'kaanBack', { into: 'deep' }) },
         ],
         else: [{
           if: (s, g) => s.flags.kaanAngry && alive(g, 'kaan'),
@@ -180,7 +180,7 @@ export const SCENES = [
   {
     id: 'siege',
     when: (ev) => ev.type === 'night' && ev.day === 2,
-    delay: 48,
+    delay: 64,
     requires: (s, g) => alive(g, 'defne'),
     steps: [
       { narrate: 'Defne odun almak için kulübenin arkasına gitti. Işığın dışına.' },
@@ -269,14 +269,16 @@ export class Story {
   update(dt) {
     const g = this.game;
     if (!g.paused) {
+      // gecikmeler oyun saatine göre işler (hızlandırılmış zamanda da sahneler doğru sırada gelir)
+      const sdt = dt * (g.timeScale ?? 1);
       for (const t of [...this.timed]) {
-        t.left -= dt;
+        t.left -= sdt;
         if (t.left <= 0) {
           this.timed.splice(this.timed.indexOf(t), 1);
           this.queue.push(t);
         }
       }
-      this.tickT += dt;
+      this.tickT += sdt;
       if (this.tickT > 1) {
         this.tickT = 0;
         this.hook({ type: 'tick' });
