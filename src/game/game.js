@@ -1358,6 +1358,14 @@ export class Game {
       for (const sh of this.siegeShades ?? []) if (this.shades.list.includes(sh)) this.shades.onDeath(sh);
       this.siegeShades = [];
     };
+    // birini aldılar: kuşatan gölgeler ormana çekilir ("Sonra sadece rüzgâr")
+    const sated = () => {
+      for (const sh of this.siegeShades ?? []) {
+        sh.scripted = false;
+        sh.mode = 'retreat';
+      }
+      this.siegeShades = [];
+    };
     f.siegeDeath = true;
     if (outcome === 'kaanDies') {
       this.killSurvivor('kaan', 'sacrifice');
@@ -1365,12 +1373,10 @@ export class Game {
         def.pos.set(fire.x, fire.y);
         def.data.hp = Math.min(def.data.hp, 40);
       }
-      for (const sh of this.siegeShades ?? []) sh.scripted = false;
-      this.siegeShades = [];
+      sated();
     } else if (outcome === 'defneDies') {
       this.killSurvivor('defne', 'abandoned');
-      for (const sh of this.siegeShades ?? []) sh.scripted = false;
-      this.siegeShades = [];
+      sated();
     } else {
       const hero = this.survivors.get(outcome === 'kaanSaves' ? 'kaan' : 'ece');
       if (hero) hero.data.hp = Math.min(hero.data.hp, outcome === 'kaanSaves' ? 20 : 15);
