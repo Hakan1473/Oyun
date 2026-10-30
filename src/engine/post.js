@@ -40,7 +40,7 @@ const atmosFrag = /* glsl */ `
   varying vec2 vUv;
   ${NOISE}
   void main() {
-    vec3 col = texture2D(tColor, vUv).rgb;
+    vec3 col = max(texture2D(tColor, vUv).rgb, 0.0);
     float d = texture2D(tDepth, vUv).r;
     vec4 v = uProjInv * vec4(vUv * 2.0 - 1.0, d * 2.0 - 1.0, 1.0);
     v /= v.w;
@@ -169,7 +169,7 @@ const finalFrag = /* glsl */ `
     col = (col - 0.5) * uContrast + 0.5;
     float vig = smoothstep(0.2, 1.1, e);
     col *= 1.0 - uVignette * vig;
-    col = mix(col, vec3(0.32, 0.0, 0.02), clamp(uDamage * (0.25 + edge), 0.0, 0.85));
+    col = mix(col, vec3(0.24, 0.0, 0.015), clamp(uDamage * (0.06 + edge * 0.95), 0.0, 0.6));
     float g = hash(uv * uRes + fract(uTime * 7.13) * 91.7) - 0.5;
     col += g * uGrain * (0.35 + 0.65 * smoothstep(0.0, 0.5, l));
     float bar = smoothstep(uLetter, uLetter - 0.004, uv.y) + smoothstep(1.0 - uLetter, 1.0 - uLetter + 0.004, uv.y);

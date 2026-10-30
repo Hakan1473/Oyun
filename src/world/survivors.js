@@ -12,11 +12,11 @@ const beamGeo = (() => {
   const g = new THREE.ConeGeometry(1, 1, 20, 1, true);
   g.translate(0, -0.5, 0);
   g.rotateX(-Math.PI / 2);
-  // tepeden uca saydamlaşan köşe renkleri
+  // tepeden uca saydamlaşan köşe renkleri (tepe z=0, uç z=1)
   const p = g.attributes.position;
   const c = new Float32Array(p.count * 3);
   for (let i = 0; i < p.count; i++) {
-    const k = Math.max(0, 1 + p.getZ(i)) ** 1.5;
+    const k = Math.min(1, Math.max(0, p.getZ(i))) ** 0.7;
     c[i * 3] = c[i * 3 + 1] = c[i * 3 + 2] = (1 - k) * 0.5;
   }
   g.setAttribute('color', new THREE.BufferAttribute(c, 3));
