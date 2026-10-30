@@ -37,7 +37,8 @@ const beamMat = new THREE.ShaderMaterial({
     varying float vFacing;
     void main() {
       float z = clamp(vZ, 0.0, 1.0);
-      float along = pow(1.0 - z, 1.8) * smoothstep(0.0, 0.06, z);
+      // fenerin hemen önünde ince ve sönük başlar, birkaç metre ötede sisin içinde açılır
+      float along = pow(1.0 - z, 1.6) * smoothstep(0.0, 0.32, z);
       float edge = pow(vFacing, 3.0);
       gl_FragColor = vec4(uColor * (edge * along * uStrength), 1.0);
     }`,
@@ -72,7 +73,7 @@ export class Survivor {
     this.hurtFlash = 0;
     this.beam = new THREE.Mesh(beamGeo, beamMat);
     this.beam.visible = false;
-    this.beam.renderOrder = 13;
+    this.beam.renderOrder = 25;
     sys.game.stage.scene.add(this.beam);
     const blob = new THREE.Mesh(blobGeo, blobShadowMaterial());
     blob.position.y = 0.012;
@@ -375,9 +376,9 @@ export class Survivors {
       l.target.position.set(s.pos.x + Math.sin(s.heading) * r, 0, s.pos.y + Math.cos(s.heading) * r);
       l.target.updateMatrixWorld();
       l.distance = r * 1.5;
-      l.intensity = 7 * this.game.cycle.darkness;
+      l.intensity = 5 * this.game.cycle.darkness;
     });
-    beamMat.uniforms.uStrength.value = 0.32 * this.game.cycle.darkness;
+    beamMat.uniforms.uStrength.value = 0.36 * this.game.cycle.darkness;
   }
 
   // Bir noktaya en yakın müsait kişi

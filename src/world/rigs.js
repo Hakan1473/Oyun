@@ -11,12 +11,32 @@ const xray = new THREE.MeshBasicMaterial({
   polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -40,
 });
 
+// Gövde parçaları siluetten sonra çizilsin diye saydam sıraya taşınır (opaklık 1).
+// Böylece siluet yalnızca derinlikte başka bir nesne varken çıkar; kolun arkasında kalan
+// gövde gibi karakterin kendi parçaları birbirine siluet düşürmez.
+const late = new Map();
+const lateOf = (m) => {
+  if (m === MAT.warm || m === MAT.cold || m === MAT.glow) return m;
+  let c = late.get(m);
+  if (!c) {
+    c = m.clone();
+    c.transparent = true;
+    c.opacity = 1;
+    c.depthWrite = true;
+    late.set(m, c);
+  }
+  return c;
+};
+
 function part(build, { xr = true } = {}) {
   const k = new Kit();
   build(k);
   const g = new THREE.Group();
   const mesh = k.build();
   mesh.castShadow = false;
+  mesh.material = Array.isArray(mesh.material) ? mesh.material.map(lateOf) : lateOf(mesh.material);
+  mesh.userData.baseMaterial = mesh.material;
+  mesh.renderOrder = 21;
   g.add(mesh);
   if (xr) {
     const x = new THREE.Mesh(mesh.geometry, xray);

@@ -21,7 +21,7 @@ const P = {
     warm: 1.0, cold: 0.5, bg: 0x2a2b33,
   },
   night: {
-    key: 0x8aa6ff, keyI: 1.7, sky: 0x4a6090, gnd: 0x0e1218, hemiI: 1.5,
+    key: 0x8aa6ff, keyI: 1.7, sky: 0x4a6090, gnd: 0x141a24, hemiI: 2.1,
     fog: 0x2a3a52, fogLight: 0x40587a, density: 0.6, heightK: 0.8,
     exposure: 1.7, sat: 0.6, contrast: 1.08, tint: [0.88, 0.97, 1.1], lift: [0.004, 0.009, 0.018], vignette: 0.6, bloom: 1.1,
     warm: 2.2, cold: 1.6, bg: 0x0a0e16,
