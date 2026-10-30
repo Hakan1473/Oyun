@@ -1,64 +1,113 @@
-# LUMORA: Son Fener
+# Yuva
 
-Three.js ile yazılmış, tarayıcıda ve telefonda çalışan küçük bir açık dünya macera oyunu. Tek bir `index.html` dosyasıdır; kurulum, sunucu ya da harici görsel/ses dosyası gerektirmez. Ada, ağaçlar, dokular, müzik ve ses efektleri açılışta prosedürel olarak üretilir.
+**Küçük bir köy. Büyük bir hikâye.**
 
-## Hikâye
-
-Lumora Adası'nda güneş yüz yıldır doğmuyor. Beş Işık Sunağı söndüğünden beri ada alacakaranlığa ve Sis Ruhları'na teslim olmuş. Sen, son fener bekçisinin çırağı **Ela**'sın. Kamp ateşinin başındaki **Bekçi Ilgaz** ile konuş, beş sunağı uyandır ve kuzeydeki Büyük Fener'i yeniden yak.
-
-Her uyanan sunak güneşi biraz daha yükseltir: sis incelir, ışık ısınır, müzik minörden majöre döner. Final sahnesinde fener yanar ve şafak söker.
+Yuva, tarayıcıda çalışan izometrik bir köy kurma oyunudur. Kamera tepeden, sabit bir "tanrı bakışı" açısıyla bakar; binalar üç boyutlu modellenir ama sahne dönmez. Telefonda dokunarak, bilgisayarda fareyle oynanır. Kurulum gerekmez.
 
 ## Oynanış
 
-- **Sunak ritüeli:** Sunağa yaklaş, "Uyandır" de. İlerleme çemberi dolarken rune çemberinin içinde kal; Sis Ruhları dalgalar halinde saldırır.
-- **Işık patlaması:** Fener enerjisi harcayarak çevrendeki ruhları dağıtır.
-- **Işık Tohumları:** Adaya dağılmış 40 altın tohum. Enerji ve can verir.
-- **Kamp ateşi güvenli bölgedir.** Ölürsen son uyandırdığın sunakta yeniden doğarsın.
-- İlerleme tarayıcıya otomatik kaydedilir ("Devam Et").
+- **Saray kur.** Meydan sarayın için boş bırakıldı. Saray köyün kalbidir: seviyesi arttıkça yeni yapılar açılır, depolar genişler.
+- **Ev yap.** Her ev köye yeni köylüler getirir ve küçük bir vergi (altın) üretir.
+- **Kaynak topla.** Oduncu kereste, Pazar altın üretir. Binanın üstünde baloncuk belirince ona dokun.
+- **Ustalar.** Aynı anda iki inşaat yürür. Sarı baretli ustalar şantiyeye koşar ve çekiç sallar.
+- **Temizle ve süsle.** Yaşlı meşeleri, çamları, kayaları temizle; çiçeklik, fener, bank, çeşme ve taş yollarla köyünü güzelleştir. Köylüler taş yolları sever.
+- **Görevler** seni adım adım yönlendirir ve ödül verir.
+- İlerleme cihaza otomatik kaydedilir. Sen yokken üretim ve inşaatlar devam eder.
 
 ## Kontroller
 
-| | Bilgisayar | Telefon |
+| | Telefon / tablet | Bilgisayar |
 |---|---|---|
-| Hareket | W A S D / ok tuşları | Ekranın sol yarısında sanal joystick |
-| Koş | Shift | Joystick'i sonuna kadar it |
-| Zıpla | Boşluk | Zıpla düğmesi |
-| Işık patlaması | F | Işık (yıldız) düğmesi |
-| Etkileşim | E | Beliren "Konuş / Uyandır" düğmesi |
-| Kamera | Fareyle sürükle, tekerlek ile yakınlaş | Ekranın sağ yarısında sürükle |
-| Duraklat | Esc / P | Sağ üstteki düğme |
-
-## Grafik özellikleri
-
-- Gürültü tabanlı ada yüksekliği, patikalar, kumsal, kayalık ve karlı zirve; köşe renkli ve normal haritalı arazi
-- Fresnel yansımalı, kıyı köpüklü, derinliğe göre renk değiştiren su ve sığ suda kostik ışık desenleri
-- Fiziksel gökyüzü, prosedürel bulutlar, ilerlemeyle değişen güneş ve yükseklik tabanlı yer sisi
-- GPU'da oyuncuyu takip eden 80.000'e kadar rüzgârda sallanan çimen; oyuncu yürüdükçe eğilir
-- Rüzgârda sallanan çam, meşe ve kiraz ağaçları; kamera ile oyuncu arasında kalan yapraklar titreşimli şeffaflaşır
-- Prosedürel yürüme/koşma/zıplama/yüzme animasyonları, verlet fiziğiyle uçuşan atkı, sallanan fener ışığı
-- Bloom, ACES ton eşleme, renk derecelendirme, vinyet ve film greni
-- Mobil için otomatik kalite seçimi ve kare hızına göre uyarlanan çözünürlük; duraklatma menüsünden Düşük/Orta/Yüksek
+| Gezinmek | Bir parmakla sürükle | Sürükle, WASD ya da ok tuşları |
+| Yakınlaşmak | İki parmakla sıkıştır | Fare tekerleği, + / − |
+| Seçmek | Dokun | Tıkla |
+| Bina taşımak | Seçili binayı sürükle | Seçili binayı sürükle |
+| İnşa menüsü | "İnşa Et" düğmesi | B |
+| Vazgeçmek | ✕ | Esc |
 
 ## Çalıştırma
 
-`index.html` dosyasını modern bir tarayıcıda açman yeterli (Three.js jsDelivr CDN'den yüklenir, internet bağlantısı gerekir).
+Oyun derleme gerektirmez; herhangi bir statik sunucu yeter.
 
-**Google AI Studio'da:** Build modunda yeni bir uygulama açıp `index.html` içeriğini projenin `index.html` dosyasına yapıştırabilirsin. Oyun tek dosya ve harici varlık kullanmadığı için başka bir dosyaya gerek yoktur.
-
-## Geliştirme
-
-Kaynak kod `src/` altında modüllere bölünmüştür; `index.html` bunlardan üretilir:
-
-```
-node build.mjs
+```bash
+node tools/serve.mjs        # http://localhost:5173 — aynı ağdaki telefondan da açılır
 ```
 
-| Dosya | İçerik |
-|---|---|
-| `src/template.html` | Arayüz, menüler, CSS |
-| `src/js/01-core.js` | Yardımcılar, gürültü, prosedürel dokular, renderer, sis |
-| `src/js/02-world.js` | Ada şekli, patikalar, arazi, su, gökyüzü ve atmosfer |
-| `src/js/03-props.js` | Ağaçlar, çimen, kayalar, sunaklar, fener, kamp, harabeler |
-| `src/js/04-entities.js` | Parçacıklar, karakterler, animasyon, Sis Ruhları, tohumlar |
-| `src/js/05-audio.js` | WebAudio ile prosedürel müzik ve efektler |
-| `src/js/06-game.js` | Kontroller, kamera, arayüz, hikâye akışı, ana döngü |
+Tek dosyalık, paylaşılabilir sürüm (`dist/yuva.html`):
+
+```bash
+npm install
+npm run build
+```
+
+GitHub Pages'te yayınlamak için depo ayarlarından *Pages → Deploy from branch* seçip kök klasörü göstermek yeterli. Telefonda "Ana Ekrana Ekle" ile tam ekran uygulama gibi açılır.
+
+## Mimari
+
+```
+index.html              giriş ekranı ve sayfa iskeleti
+styles/main.css         arayüz tasarım dili (cam yüzeyler, yuvarlak yazı, yaylı hareket)
+src/
+  config.js             tüm ayarlanabilir sabitler
+  main.js               açılış: sahne → kayıt → arayüz → döngü
+  core/                 olay yolu, kayıt (sürümlü), tohumlu rastgele, biçimlendirme
+  engine/
+    stage.js            çizici, ışıklar, önbellekli gölgeler, uyarlanır çözünürlük
+    camera.js           sabit açılı ortografik kamera; kaydırma, sıkıştırma, atalet
+    input.js            dokunma / fare / klavye → tap, sürükle, yakınlaştır
+    kit.js              modelleme kiti: ilkel şekilleri tek ağa birleştirir
+    grid.js             ızgara ve doluluk haritası
+    fx.js               parçacıklar (duman, toz, kıvılcım, yaprak, konfeti)
+    overlay.js          dünyaya iliştirilmiş HTML (etiket, sayaç, baloncuk)
+  world/                arazi, orman, nehir, köylüler, yol bulma (A*)
+  buildings/            her bina kendi dosyasında; registry.js kayıt defteri
+  game/                 oyun yöneticisi, kurallar, görevler, başlangıç köyü
+  ui/                   HUD, mağaza, bilgi ve ayar sayfaları, simgeler, küçük resimler
+  audio/                Web Audio ile anında üretilen sesler ve müzik kutusu
+vendor/three/           Three.js r170 (MIT)
+tools/                  yerel sunucu, tek dosya derleyici, simge üretici
+```
+
+Tüm modeller kodla, köşe renkleriyle üretilir; her bina tek çizim çağrısına birleştirilir. Görsel dosya ya da ses dosyası yoktur.
+
+## Yeni bir bina eklemek
+
+1. `src/buildings/` altına bir dosya açın:
+
+```js
+import { defineBuilding } from './registry.js';
+import { C } from '../engine/palette.js';
+import { pad, gableRoof, door, onFace } from './parts.js';
+
+defineBuilding({
+  id: 'bakery',
+  name: 'Fırın',
+  description: 'Mis gibi ekmek kokusu köyü sarar.',
+  category: 'resource',            // village | resource | decor | obstacle
+  size: 2,
+  limit: ({ palaceLevel }) => palaceLevel,
+  levels: [
+    { cost: { gold: 300, wood: 200 }, time: 20, xp: 25, requires: { palace: 1 },
+      produces: { resource: 'gold', rate: 10, capacity: 100 } },
+  ],
+  model({ kit, level, rng, anchor }) {
+    const y0 = pad(kit, 2);
+    kit.box(1.2, 0.8, 1.0, C.wallButter, { y: y0 + 0.4, r: 0.03 });
+    gableRoof(kit, { len: 1.2, depth: 1.0, rise: 0.45, y: y0 + 0.8, color: C.roofOrange, gable: C.wallButter });
+    onFace(kit, '+z', 0.5, 0, y0, () => door(kit));
+    anchor('smoke', 0.3, y0 + 1.5, -0.2); // bacadan duman
+  },
+});
+```
+
+2. `src/buildings/index.js` dosyasına `import './bakery.js';` satırını ekleyin.
+
+Mağaza kartı, 3B küçük resim, yerleştirme, inşaat, üretim, kayıt ve köylüler yeni binayı kendiliğinden tanır. Yeni görev eklemek için `src/game/quests.js` listesine bir öğe eklemek yeterlidir.
+
+## Yol haritası
+
+- Hikâye bölümleri ve köy karakterleri (muhtar, demirci, gezgin tüccar)
+- Gece–gündüz döngüsü, mevsimler ve hava durumu
+- Yeni yapılar: fırın, demirci, değirmen, kütüphane, liman
+- Arazi genişletme ve köy düzeni kaydetme
+- Başarılar ve günlük ödüller

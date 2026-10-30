@@ -1,0 +1,15 @@
+{
+  "name": "yuva",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Yuva — izometrik köy kurma oyunu (tarayıcıda çalışır)",
+  "type": "module",
+  "scripts": {
+    "dev": "node tools/serve.mjs",
+    "build": "node tools/build.mjs",
+    "icons": "node tools/make-icons.cjs"
+  },
+  "devDependencies": {
+    "esbuild": "0.24.0"
+  }
+}
