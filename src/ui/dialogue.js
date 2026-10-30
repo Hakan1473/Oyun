@@ -77,6 +77,7 @@ export class Dialogue {
   async open({ fade = false } = {}) {
     this.skipAll = false;
     this.el.classList.add('open');
+    document.body.classList.add('in-dialog');
     this.fade = fade;
     const p = this.stage.post.params;
     await Promise.all([
@@ -86,6 +87,7 @@ export class Dialogue {
   }
 
   async close({ fade = false } = {}) {
+    document.body.classList.remove('in-dialog');
     this.panel.classList.remove('show');
     this.choices.classList.remove('show');
     this.narr.classList.remove('show');

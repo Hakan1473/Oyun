@@ -1057,8 +1057,14 @@ export class Game {
   damageView(v, dmg, shade) {
     const e = v.e;
     if (!e.hp) return;
+    const before = e.hp;
     e.hp = Math.max(0, e.hp - dmg);
     v.hit?.();
+    if (e.type === 'cabin') {
+      const max = levelStats(v.def, e.level).hp;
+      if (before > max * 0.35 && e.hp <= max * 0.35 && e.hp > 0) bus.emit('toast', { text: 'Kulübe dağılmak üzere', icon: 'warning', tone: 'bad' });
+      if (before > 0 && e.hp <= 0) bus.emit('toast', { text: 'Kulübe çöktü: içine sığınılamaz. Gündüz onar.', icon: 'warning', tone: 'bad' });
+    }
     this.fx.chips(v.center.x, 0.6, v.center.z, 3);
     if (this.#onScreen(v.center)) audio.play('impact', { gap: 150 });
     this.#hpBar(v);

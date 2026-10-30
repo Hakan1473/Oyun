@@ -206,7 +206,8 @@ export class Survivor {
     }
     scared = !!threat && threat.d < 5 && dark > 0.5;
 
-    // görev
+    // görev (iş bitince ya da iptal edilince boşa düş; yoksa gece nöbete geçmez)
+    if (!this.task && this.mode === 'work') this.mode = 'idle';
     if (this.task && this.mode !== 'walk' && this.mode !== 'flee') {
       const tk = this.task;
       if (!game.taskValid(tk)) {
