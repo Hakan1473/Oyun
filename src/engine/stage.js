@@ -76,7 +76,7 @@ export class Stage {
       return l;
     });
     this.spots = Array.from({ length: quality === 'low' ? 1 : 2 }, () => {
-      const l = new THREE.SpotLight(0xdfe8ff, 0, 11, 0.42, 0.55, 1.4);
+      const l = new THREE.SpotLight(0xfff0dc, 0, 11, 0.42, 0.75, 1.2);
       scene.add(l, l.target);
       return l;
     });

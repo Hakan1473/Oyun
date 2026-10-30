@@ -8,22 +8,40 @@ import { blobShadowMaterial } from '../engine/materials.js';
 
 const WALK = 2.3;
 const RUN = 3.6;
+// Fener hüzmesi: açık uçlu koni (tepe z=0, uç z=1). Kenarlara ve uca doğru sönen,
+// sisin içinde asılı duran yumuşak bir ışık; düz bir üçgen gibi görünmemesi için
+// yüzey bakış yönüne dik kaldıkça saydamlaşır.
 const beamGeo = (() => {
-  const g = new THREE.ConeGeometry(1, 1, 20, 1, true);
+  const g = new THREE.ConeGeometry(1, 1, 28, 6, true);
   g.translate(0, -0.5, 0);
   g.rotateX(-Math.PI / 2);
-  // tepeden uca saydamlaşan köşe renkleri (tepe z=0, uç z=1)
-  const p = g.attributes.position;
-  const c = new Float32Array(p.count * 3);
-  for (let i = 0; i < p.count; i++) {
-    const k = Math.min(1, Math.max(0, p.getZ(i))) ** 0.7;
-    c[i * 3] = c[i * 3 + 1] = c[i * 3 + 2] = (1 - k) * 0.5;
-  }
-  g.setAttribute('color', new THREE.BufferAttribute(c, 3));
   return g;
 })();
-const beamMat = new THREE.MeshBasicMaterial({
-  vertexColors: true, color: 0xcfdcff, transparent: true, opacity: 0.22, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide,
+const beamMat = new THREE.ShaderMaterial({
+  uniforms: { uColor: { value: new THREE.Color(0xffeedd) }, uStrength: { value: 0 } },
+  vertexShader: /* glsl */ `
+    varying float vZ;
+    varying float vFacing;
+    void main() {
+      vZ = position.z;
+      vec4 mv = modelViewMatrix * vec4(position, 1.0);
+      vec3 n = normalize(normalMatrix * normal);
+      vec3 v = projectionMatrix[3][3] > 0.5 ? vec3(0.0, 0.0, 1.0) : normalize(-mv.xyz);
+      vFacing = abs(dot(n, v));
+      gl_Position = projectionMatrix * mv;
+    }`,
+  fragmentShader: /* glsl */ `
+    uniform vec3 uColor;
+    uniform float uStrength;
+    varying float vZ;
+    varying float vFacing;
+    void main() {
+      float z = clamp(vZ, 0.0, 1.0);
+      float along = pow(1.0 - z, 1.8) * smoothstep(0.0, 0.06, z);
+      float edge = pow(vFacing, 3.0);
+      gl_FragColor = vec4(uColor * (edge * along * uStrength), 1.0);
+    }`,
+  transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide,
 });
 const blobGeo = new THREE.PlaneGeometry(0.8, 0.8).rotateX(-Math.PI / 2);
 
@@ -357,8 +375,9 @@ export class Survivors {
       l.target.position.set(s.pos.x + Math.sin(s.heading) * r, 0, s.pos.y + Math.cos(s.heading) * r);
       l.target.updateMatrixWorld();
       l.distance = r * 1.5;
-      l.intensity = 18 * this.game.cycle.darkness;
+      l.intensity = 7 * this.game.cycle.darkness;
     });
+    beamMat.uniforms.uStrength.value = 0.32 * this.game.cycle.darkness;
   }
 
   // Bir noktaya en yakın müsait kişi
