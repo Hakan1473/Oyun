@@ -293,8 +293,11 @@ export class Post {
     this.rtScene.texture.generateMipmaps = false;
     // Bazı mobil sürücüler kayan noktalı ya da çok örnekli hedefi kabul etmez: sessizce sadeleştir
     if (!this.#complete(this.rtScene)) {
-      if (this.samples > 0) this.samples = 0;
-      else if (this.type !== THREE.UnsignedByteType) this.type = THREE.UnsignedByteType;
+      if (this.samples > 0) {
+        // MSAA yoksa kenarları FXAA yumuşatsın
+        this.samples = 0;
+        this.fxaa = true;
+      } else if (this.type !== THREE.UnsignedByteType) this.type = THREE.UnsignedByteType;
       else throw new Error('Görüntü hedefi oluşturulamadı');
       return this.setSize(w, h, dpr, true);
     }
